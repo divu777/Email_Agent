@@ -1,0 +1,1 @@
+{"root":["./src/index.ts","./src/config/index.ts","./src/db/index.ts","./src/email/index.ts","./src/genai/index.ts","./src/genai/prompts/prompts.ts","./src/gmail/index.ts","./src/queue/index.ts","./src/routes/analyticroute.ts","./src/routes/gmailroute.ts","./src/routes/promptroute.ts","./src/socket/index.ts","./types/globals.d.ts"],"version":"5.8.2"}
