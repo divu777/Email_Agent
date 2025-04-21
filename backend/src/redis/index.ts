@@ -5,14 +5,15 @@ import { google } from "googleapis";
 import { gmailobj } from "../gmail";
 import { sendWelcomeEmail } from "../resend";
 import { db } from "../db";
+import config from "../config";
+const connection = new IORedis(config.REDIS_CLIENT!,{ maxRetriesPerRequest: null ,tls:{}});
 
-const myQueue = new Queue("email");
+const myQueue = new Queue("email",{connection});
 export async function addJobs(jobs: any) {
   await myQueue.add("myJobName", jobs);
 }
 
 const workers: Worker<any, any, string>[] = [];
-const connection = new IORedis({ maxRetriesPerRequest: null });
 
 const addworkers = () => {
   console.log("inside workers");
@@ -97,7 +98,7 @@ export const scaleWrokers = async () => {
 setInterval(scaleWrokers, 30000);
 
 
-export const sendFirstEmailQueue = new Queue('send_first_email');
+export const sendFirstEmailQueue = new Queue('send_first_email',{connection});
 
 const worker=new Worker('send_first_email',async(job)=>{
 

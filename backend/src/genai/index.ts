@@ -1,5 +1,5 @@
 import { InferenceClient } from "@huggingface/inference";
-import { addJobs } from "../queue";
+import { addJobs } from "../redis";
 import { db } from "../db";
 import config from "../config";
 import {  prompts } from "./prompts/prompts";

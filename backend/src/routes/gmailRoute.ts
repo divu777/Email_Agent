@@ -2,7 +2,7 @@ import e from "express";
 import { gmailobj } from "../gmail";
 import { db } from "../db";
 import { activeIntervals, handleEmail } from "../email";
-import { sendFirstEmailQueue } from "../queue";
+import { sendFirstEmailQueue } from "../redis";
 
 const router = e.Router();
 
