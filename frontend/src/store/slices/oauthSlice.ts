@@ -16,8 +16,8 @@ export const OAuthSlice = createSlice({
             state.auto_reply = action.payload?.auto_reply ?? state.auto_reply;
             state.onboarding_complete = action.payload?.onboarding_complete ?? state.onboarding_complete
         },
-        disconnectMail:(state)=>{
-            state=initialState
+        disconnectMail:()=>{
+            return initialState
         },
         setPrompt:(state,action)=>{
             state.connected=true

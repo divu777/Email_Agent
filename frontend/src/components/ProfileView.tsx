@@ -1,7 +1,6 @@
-import React from 'react';
 import { useUser } from '@clerk/clerk-react';
 import { motion } from 'framer-motion';
-import { Sparkles, Mail, UserCircle, Calendar } from 'lucide-react';
+import { Sparkles, Mail, Calendar } from 'lucide-react';
 
 const ProfileView = () => {
   const { user } = useUser();

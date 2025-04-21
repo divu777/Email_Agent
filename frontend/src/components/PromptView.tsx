@@ -127,7 +127,7 @@ const PromptView = () => {
       </motion.div>
 
       <div className="grid md:grid-cols-3 gap-4 mb-6">
-        {promptOptions.map((option, idx) => (
+        {promptOptions.map((option) => (
           <motion.button
             key={option.id}
             whileHover={{ scale: 1.03 }}
