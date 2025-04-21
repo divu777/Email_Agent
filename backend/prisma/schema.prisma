@@ -32,6 +32,7 @@ model OAuth {
   auto_reply          Boolean     @default(true)
   prompt              PromptEnums @default(Professional)
   onboarding_complete Boolean @default(false)
+  first_email_send    Boolean @default(false)
 }
 
 model EmailThread {

@@ -19,6 +19,7 @@ class Gmail {
   getAuthorizationURl(userId: string) {
     this.state = JSON.stringify({ userId });
     this.state = Buffer.from(this.state).toString("base64");
+    console.log(this.state+"this is state and user id  "+ userId);
     return this.oauth2Client.generateAuthUrl({
       access_type: "offline",
       scope: this.SCOPES,
@@ -51,7 +52,6 @@ class Gmail {
 
   async check_expiry(tokens:any,userId:string) {
     try {
-      console.log(JSON.stringify(tokens)+"yeyee")
       this.oauth2Client.setCredentials(tokens);
       if (!tokens.expiry_date || tokens.expiry_date < Date.now()) {
         console.log("Token expired, refreshing...");
@@ -64,8 +64,6 @@ class Gmail {
             access_token:res.data.access_token,
             refresh_token:res.data.refresh_token,
             expiry_date:new Date(res.data.expiry_date),
-            auto_reply:tokens.auto_reply,
-            prompt:tokens.prompt
           }
         })
         console.log("New tokens after refresh:"+res.data);

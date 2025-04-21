@@ -7,7 +7,8 @@ const config = {
   CLIENT_SECRET: process.env.CLIENT_SECRET,
   REDIRECT_URL: process.env.REDIRECT_URL,
   AI_API: process.env.AI_API,
-  FRONTEND_URL:process.env.FRONTEND_URL
+  FRONTEND_URL:process.env.FRONTEND_URL,
+  RESEND_API_KEY:process.env.RESEND_API_KEY
 };
 
 export default config;

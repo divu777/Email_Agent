@@ -3,16 +3,20 @@ import "./index.css";
 import App from "./App.tsx";
 import { ClerkProvider } from "@clerk/clerk-react";
 import { Provider } from "react-redux";
-import store from "./store/store.ts";
+import  { persistor, store } from "./store/store.ts";
 import { config } from "./config/index.ts";
+import { PersistGate } from "redux-persist/integration/react";
 
 createRoot(document.getElementById("root")!).render(
-  <Provider store={store}>
-    <ClerkProvider
+  <ClerkProvider
       publishableKey={config.PUBLISHABLE_KEY}
       afterSignOutUrl="/dashboard"
     >
+  <Provider store={store}>
+     <PersistGate loading={null} persistor={persistor}>
       <App />
-    </ClerkProvider>
+    
+    </PersistGate>
   </Provider>
+  </ClerkProvider>
 );

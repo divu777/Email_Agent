@@ -1,12 +1,18 @@
 import { createSlice } from "@reduxjs/toolkit"
 
-const initialState={
-    status:false,
-    userId:"",
-    firstName:"Guest",
-    lastName:"User",
-    email:""
-
+interface OAuth{
+    status:Boolean,
+    userId:string,
+    firstName:string,
+    lastName:string,
+    email:string
+}
+const initialState:OAuth={
+    status: false,
+    userId: "",
+    firstName: "",
+    lastName: "",
+    email: ""
 }
 export const authSlice=createSlice({
     name:'auth',
@@ -19,7 +25,7 @@ export const authSlice=createSlice({
             state.lastName=action.payload.lastName
             state.email=action.payload.email
         },
-        signout:(state)=>{
+        logout:(state)=>{
             state.status=false,
             state.userId="",
             state.firstName="Guest",
@@ -30,7 +36,7 @@ export const authSlice=createSlice({
 })
 
 
-export const {login,signout}=authSlice.actions
+export const {login,logout}=authSlice.actions
 
 
 export  const authreducer = authSlice.reducer;

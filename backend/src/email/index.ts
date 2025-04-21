@@ -59,7 +59,18 @@ export const handleEmail = async ( userIdClerk: string, prompt:PromptEnums) => {
                       const emailSnippet = msg.data.snippet || "";
                       const emailContent = `${emailSnippet}\n\n${subjectHeader}`;
                       const fromHeader = msg.data.payload?.headers?.find((head) => head.name === "From")?.value || "No Sender";
+                      const emailMatch = fromHeader.match(/<([^>]+)>/);
+                      const senderEmail = emailMatch ? emailMatch[1] : null;
                       const threadId = msg.data.threadId!;
+                     console.log(senderEmail+"is sender mail randddd");
+
+                    const isServiceEmail =  senderEmail?.includes("noreply") || senderEmail?.includes("do-not-reply");
+
+                    if (isServiceEmail) {
+                    console.log("Skipping auto-reply to service email:", senderEmail);
+                    await oauth2.users.messages.modify({userId:'me',id:message.id!,requestBody:{removeLabelIds:['UNREAD']}})
+                    return;
+                    }
     
                       let existingThread = await db.emailThread.findFirst({ where: { threadId } });
                       if (!existingThread) {

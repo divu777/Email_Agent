@@ -10,21 +10,26 @@ export const OAuthSlice = createSlice({
     name:'OAuth',
     initialState,
     reducers:{
-        connect:(state,action)=>{
+        connectMail:(state,action)=>{
+            console.log(JSON.stringify(action.payload)+"payyy");
             state.connected=true
             state.auto_reply = action.payload?.auto_reply ?? state.auto_reply;
             state.onboarding_complete = action.payload?.onboarding_complete ?? state.onboarding_complete
         },
-        disconnect:(state)=>{
-            state.connected=false
+        disconnectMail:(state)=>{
+            state=initialState
         },
         setPrompt:(state,action)=>{
+            state.connected=true
             state.onboarding_complete=action.payload.onboarding_complete ?? state.onboarding_complete
+        },
+        updateAutoReply:(state,action)=>{
+            state.auto_reply=action.payload?.auto_reply ?? state.auto_reply;
         }
     }
 
 })
 
-export const {connect,disconnect,setPrompt}=OAuthSlice.actions;
+export const {connectMail,disconnectMail,setPrompt,updateAutoReply}=OAuthSlice.actions;
 
 export const OAuthreducer=OAuthSlice.reducer

@@ -2,13 +2,13 @@ import e from "express";
 import { gmailobj } from "../gmail";
 import { db } from "../db";
 import { activeIntervals, handleEmail } from "../email";
+import { sendFirstEmailQueue } from "../queue";
 
 const router = e.Router();
 
 // check if userId exists in OAuth
 router.get("/checkOAuth/:userId", async (req, res) => {
   const { userId } = req.params;
-
 
   const result = await db.oAuth.findUnique({
     where: { userId },
@@ -19,7 +19,7 @@ router.get("/checkOAuth/:userId", async (req, res) => {
     return res.json({
       message: `No token available for the userId + ${userId}`,
       status: 200,
-      data:false,
+      success:false
     });
   } 
   
@@ -27,6 +27,7 @@ router.get("/checkOAuth/:userId", async (req, res) => {
     message: `Token available for the userId + ${userId}`,
     status: 200,
     data: result,
+    success:true
   });
 });
 
@@ -42,7 +43,6 @@ router.post("/getAuthUrl", async (req, res) => {
     });
 
     const authUrl = gmailobj.getAuthorizationURl(userId);
-
     return res.json({ status: 200, url: authUrl });
   } catch (err) {
     console.log(err);
@@ -60,6 +60,13 @@ router.post("/startService", async (req, res) => {
 
     const result = await db.oAuth.findUnique({
       where: { userId },
+      include:{
+        user:{
+          select:{
+            email:true
+          }
+        }
+      }
     });
 
     if (!result) {
@@ -69,13 +76,6 @@ router.post("/startService", async (req, res) => {
       });
     }
 
-    // if(result && !result.onboarding_complete){
-    //   return res.json({
-    //     message:"Onboarding not Complete",
-    //     data:result
-    //   })
-    // }
-
     if (result && !result.auto_reply) {
       return res.json({
         message: "Auto reply is set to False",
@@ -83,9 +83,25 @@ router.post("/startService", async (req, res) => {
       });
     }
 
-    const { access_token, refresh_token, expiry_date, auto_reply , prompt } = result;
 
-    await gmailobj.check_expiry({ access_token, refresh_token, expiry_date, auto_reply ,prompt}, userId);
+    const { access_token, refresh_token, expiry_date,prompt,first_email_send, user} = result;
+
+    await gmailobj.check_expiry({ access_token, refresh_token, expiry_date}, userId);
+
+    if(!first_email_send){
+       sendFirstEmailQueue.add('send-first-email', {
+        
+          userId,
+          email:user.email
+        
+      }, {
+        attempts: 3,
+        backoff: {
+          type: 'exponential',
+          delay: 5000, // in ms
+        },
+      });
+    }
 
     handleEmail(userId,prompt);
 
@@ -137,7 +153,17 @@ router.post("/toggleAutoReply", async (req, res) => {
 
 router.get("/getEmailThread", async(req,res)=>{
   try{
-    const result=await db.emailThread.findMany();
+    let result=await db.emailThread.findMany({
+      select:{
+        id:true,
+        userId:true,
+        threadId:true,
+        subject:true,
+        createdAt:true,
+        updatedAt:true,
+        emails:true
+      }
+    });
     if(!result){
       return res.status(200).json({
         message:"Email Thread Could Not be Fetched Successfully",
@@ -145,6 +171,16 @@ router.get("/getEmailThread", async(req,res)=>{
       })
       
     }
+
+    result=result.map(thread=>
+    {
+      const isUnread=thread.emails.some(email=>!email.read)
+      return {
+        ...thread,
+        read:!isUnread
+      }
+    }
+    )
 
     return res.status(200).json({
       message:"Email Thread fetched Successfully",
@@ -163,23 +199,48 @@ router.get("/getEmailThread/:threadId", async(req,res)=>{
     const result=await db.emailThread.findUnique({
       where:{
         threadId
+      },
+      select:{
+        emails:true
       }
     });
     if(!result){
       return res.status(200).json({
         message:`Emails Could Not be Fetched for the threadId ${threadId}`,
-        data: null
+        status:false
       })
       
     }
 
     return res.status(200).json({
       message:`Emails fetched Successfully for threadID ${threadId}`,
-      data:result
+      data:{emails:result.emails},
+      status:true
     })
   }catch(err){
     console.log("Error in getting emails for the threadId"+err)
   }
 })
+
+
+router.post("/markThreadRead/:threadId", async (req, res) => {
+  try {
+    const { threadId } = req.params;
+
+    const updated = await db.email.updateMany({
+      where: { threadId },
+      data: { read: true },
+    });
+
+    return res.status(200).json({
+      message: `Marked all emails in thread ${threadId} as read`,
+      updatedCount: updated.count,
+    });
+  } catch (err) {
+    console.log("Error marking emails read", err);
+    return res.status(500).json({ message: "Failed to mark emails as read" });
+  }
+});
+
 
 export default router;

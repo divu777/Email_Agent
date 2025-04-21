@@ -1,8 +1,10 @@
-import { Queue } from "bullmq";
+import { Job, Queue } from "bullmq";
 import { Worker } from "bullmq";
 import IORedis from "ioredis";
 import { google } from "googleapis";
 import { gmailobj } from "../gmail";
+import { sendWelcomeEmail } from "../resend";
+import { db } from "../db";
 
 const myQueue = new Queue("email");
 export async function addJobs(jobs: any) {
@@ -93,3 +95,31 @@ export const scaleWrokers = async () => {
   }
 };
 setInterval(scaleWrokers, 30000);
+
+
+export const sendFirstEmailQueue = new Queue('send_first_email');
+
+const worker=new Worker('send_first_email',async(job)=>{
+
+  const {email , userId} = job.data;
+
+console.log(JSON.stringify(job.data)+"jabbbbb")
+  await sendWelcomeEmail(String(email));
+
+  await db.oAuth.update({
+    where:{
+      userId
+    },
+    data:{
+      first_email_send: true
+    }
+  });
+},{connection})
+
+worker.on("completed", (job) => {
+  console.log(`${job.id} has completed!`);
+});
+
+worker.on("failed", (job, err) => {
+  console.log(`${job!.id} has failed with ${err.message}`);
+});

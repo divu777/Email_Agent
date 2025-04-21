@@ -30,51 +30,54 @@ app.get("/", (req, res) => {
   res.send("hello email agent boiss :)");
 });
 
-app.get("/callback", async (req, res) => {
+app.post("/callback", async (req, res) => {
   try {
-    let q = url.parse(req.url, true).query;
-    if (q.error) {
-      console.log("Error: " + q.error);
-    } else if (q.state !== gmailobj.state) {
-      console.log("State is mismatch possible CSRF Attack");
-      res.end("State mismatch hackers hai");
-    } else {
-      const { userId } = JSON.parse(
-        Buffer.from(q.state as string, "base64").toString()
-      );
-      
+    const { state, code } = req.body;
 
-      if (!userId) {
-        res.status(400).json({ error: "Invalid state parameter" });
-      }
-      await gmailobj.setTokens(q, userId);
-      res.redirect(config.FRONTEND_URL?? "http://localhost:5173");
+    if (!state || !code) {
+      return res.status(400).json({
+        message: "State and code are required",
+        success: false,
+      });
     }
+
+    if (state !== gmailobj.state) {
+      return res.status(403).json({
+        message: "State mismatch — possible CSRF attack",
+        success: false,
+      });
+    }
+
+    const decoded = JSON.parse(Buffer.from(state, "base64").toString());
+    const userId = decoded?.userId;
+
+    if (!userId) {
+      return res.status(400).json({
+        message: "Invalid state parameter",
+        success: false,
+      });
+    }
+
+    await gmailobj.setTokens({ state, code }, userId);
+
+    return res.status(200).json({
+      message: "OAuth entry made successfully for the user",
+      success: true,
+    });
+
   } catch (err) {
-    console.log(err);
+    console.error("OAuth callback error:", err);
+    return res.status(500).json({
+      message: "Internal Server Error",
+      success: false,
+    });
   }
 });
 
-app.listen(process.env.PORT, () => {
+
+
+app.listen(config.PORT, () => {
   console.log(`app is running on port ${process.env.PORT}`);
 });
 
 
-/*
-TODO FOR TOMORROW 10TH APRIL 
-
-1) IN DB CHANGE PROMPT TO ENUM TYPES TO BE CASUAL PROFESSIONAL AND FUN , WHAT WE WILL DO IS SIMPLE 
-WHEN LOADING THE PROMPT WE GET IT FROM THE PROMPTS FILE AND LOAD IT FROM THERE AND MAYBE FOR NOW JUST GIVE UK 3 OPTIONS 
-AND NO CUSTOM PROMPT FOR NOW 
-
-ALSO WORK ON THE ROUTES , /SETPROMPT , /GETPROMPT ( SHOW IN UI IN THE PROMPT PAGE ) , no need for custom for now 
-
-2) TEST THE FLOW WITH DIFFERENT CASES WITH PROMPT CHANGE AND ONBOARIND KEY IF IT WORKS 
-
-3) SET UP ANALYTICS PAGE AND ROUTES 
-
-4 ) clean up and check for all possible routes with better messages and error handling 
-
-// next week we can start UI design , till then open source 
-
-*/

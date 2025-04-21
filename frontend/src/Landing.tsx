@@ -1,66 +1,117 @@
 
-import { useEffect } from 'react'
-import Navbar from './components/Navbar'
-import axios from 'axios';
-import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
-import { config } from './config';
-import { login, signout } from './store/slices/authSlice';
-import { connect, disconnect } from './store/slices/oauthSlice';
-import { useUser } from '@clerk/clerk-react';
-
-const Landing = () => {
-  const {user}=useUser();
-  const dispatch= useDispatch();
-  const navigate= useNavigate();
+import Navbar from "./components/Navbar";
+import { useEffect } from "react";
+import {  logout } from "./store/slices/authSlice";
+import { disconnectMail, connectMail } from "./store/slices/oauthSlice";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "./store/store";
+import axios from "axios";
+import { config } from "./config";
+import Hero from "./components/Hero";
+import Footer from "./components/Footer";
+import FeatureShowcase from "./components/Feature";
 
 
-  const checkOAuth=async(userId:string)=>{
-    console.log("ouath kei andrr")
-    const result= await axios.get(`${config.BACKEND_URL}/api/v1/mail/checkOAuth/${userId}`);
-
-    console.log(JSON.stringify(result)+"resss");
+function App() {
+  const { userId } = useSelector((state: RootState) => state.authreducer);
+  const checkOAuth = async (userId: string) => {
+    const result = await axios.get(
+      `${config.BACKEND_URL}/api/v1/mail/checkOAuth/${userId}`
+    );
     return result.data;
-}
-
-  useEffect(()=>{
-    const fetchData=async()=>{
-        if(user){
-            dispatch(login({userId:user.id,firstName:user.firstName,lastName:user.lastName,email:user.primaryEmailAddress?.emailAddress}))
-            const oauthacess= await checkOAuth(user.id);
-            console.log(JSON.stringify(oauthacess)+"oauth ka pahad ");
-            if(!oauthacess.data){
-                dispatch(disconnect())
-                navigate("/connect-gmail");
-            }else{    
-                dispatch(connect(oauthacess.data))
-                navigate("/dashboard")
-            }
-
-            
-
-        }else{
-        dispatch(signout())
+  };
+  const dispatch = useDispatch();
+  useEffect(() => {
+    const fetchData = async () => {
+      if (userId) {
+        const oauthacess = await checkOAuth(userId);
+        if (!oauthacess.success) {
+          dispatch(disconnectMail());
+        } else {
+          dispatch(connectMail(oauthacess.data));
         }
-    }
+      } else {
+        dispatch(logout());
+      }
+    };
 
-    if(user){
-        fetchData()
+    if (userId) {
+      fetchData();
     }
-},[user])
+  }, [userId]);
   return (
-    <div className='bg-amber-600 h-screen w-screen'>
-        <div className='h-1/12 bg-pink-400'>
-      <Navbar />
-     
-      </div>
-      <div className='h-11/12 bg-amber-300'>
-      <h1>
-        hello
-      </h1>
+    <div className="relative">
+      <ParticleTrail />
+      <div className="relative z-10">
+        <Navbar />
+        <Hero />
+        
+        <NewsCarousel/>
+        <FeatureShowcase />
+        <Footer />
       </div>
     </div>
-  )
+  );
 }
 
-export default Landing
+export default App;
+
+
+
+import {  useState } from "react";
+import { motion } from "framer-motion";
+import NewsCarousel from "./components/NewsCarousel";
+
+const ParticleTrail = () => {
+  const [particles, setParticles] = useState<any[]>([]);
+
+  const handleMouseMove = (e: MouseEvent) => {
+    const newParticle = {
+      x: e.clientX,
+      y: e.clientY,
+      id: Date.now() + Math.random(), // Unique ID for each particle
+    };
+    setParticles((prev) => [...prev, newParticle]);
+  };
+
+  useEffect(() => {
+    window.addEventListener("mousemove", handleMouseMove);
+
+    return () => {
+      window.removeEventListener("mousemove", handleMouseMove);
+    };
+  }, []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      {particles.map((particle, index) => (
+        <motion.div
+          key={particle.id}
+          className="absolute bg-white rounded-full"
+          style={{
+            top: particle.y - 5, // Center the particle
+            left: particle.x - 5,
+            width: 10, // Particle size
+            height: 10,
+          }}
+          initial={{
+            opacity: 1,
+            scale: 1,
+          }}
+          animate={{
+            opacity: 0,
+            scale: 0.5,
+          }}
+          transition={{
+            duration: 1.5,
+            ease: "easeOut",
+            delay: index * 0.1, // Add slight delay for stagger effect
+          }}
+        />
+      ))}
+    </div>
+  );
+};
+
+
+

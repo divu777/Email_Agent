@@ -1,5 +1,6 @@
 import e from "express"
 import { db } from "../db"
+import { prompts } from "../genai/prompts/prompts";
 
 
 const router = e.Router()
@@ -40,7 +41,35 @@ router.post("/setprompt",async(req,res)=>{
     }
 })
 
-router.get("/getPrompt/:userId",async(req,res)=>{
+
+router.get("/getPrompts",(req,res)=>{
+    try {
+
+        const result=prompts
+        if(!result){
+            return res.status(200).json({
+                message:"error in getting the prompts",
+                success:false,
+                status:200
+            });
+        }
+
+        return res.status(200).json({
+            message:"Prompts fetched Successfully",
+            success:true,
+            data:result
+        })
+        
+    } catch (error) {
+        console.log("Error in getting all the Prompts");
+        return res.json({
+            message:"error in getting all the prompts",
+            success:false
+        })
+    }
+})
+
+router.get("/getPrompts/:userId",async(req,res)=>{
     try{
         const {userId}= req.params
         const result=await db.oAuth.findUnique({
