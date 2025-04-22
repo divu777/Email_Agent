@@ -16,15 +16,13 @@ const express_1 = __importDefault(require("express"));
 const cors_1 = __importDefault(require("cors"));
 const gmail_1 = require("./gmail");
 const gmailRoute_1 = __importDefault(require("./routes/gmailRoute"));
-const process_1 = __importDefault(require("process"));
 const http_1 = require("http");
 const socket_1 = require("./socket");
 const config_1 = __importDefault(require("./config"));
 const analyticRoute_1 = __importDefault(require("./routes/analyticRoute"));
 const promptRoute_1 = __importDefault(require("./routes/promptRoute"));
 const app = (0, express_1.default)();
-const app2 = (0, express_1.default)();
-const server = (0, http_1.createServer)(app2);
+const server = (0, http_1.createServer)(app);
 (0, socket_1.IOinit)(server);
 app.use((0, cors_1.default)());
 app.use(express_1.default.json());
@@ -71,6 +69,6 @@ app.post("/callback", (req, res) => __awaiter(void 0, void 0, void 0, function* 
         });
     }
 }));
-app.listen(config_1.default.PORT, () => {
-    console.log(`app is running on port ${process_1.default.env.PORT}`);
+server.listen(config_1.default.PORT, () => {
+    console.log(`Server (HTTP + WebSocket) running on port ${config_1.default.PORT}`);
 });

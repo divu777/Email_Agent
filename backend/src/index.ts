@@ -1,6 +1,5 @@
 import e from "express";
 import cors from "cors";
-import url from "url";
 import { gmailobj } from "./gmail";
 import mailRoutes from "./routes/gmailRoute";
 import process from "process";
@@ -14,8 +13,7 @@ import promptRoute from "./routes/promptRoute"
 const app = e();
 
 
-const app2=e();
-const server =createServer(app2);
+const server =createServer(app);
 
 IOinit(server);
 
@@ -76,8 +74,8 @@ app.post("/callback", async (req, res) => {
 
 
 
-app.listen(config.PORT, () => {
-  console.log(`app is running on port ${process.env.PORT}`);
+server.listen(config.PORT, () => {
+  console.log(`Server (HTTP + WebSocket) running on port ${config.PORT}`);
 });
 
 

@@ -7,7 +7,7 @@ const socketUsers = new Map();
 
 function IOinit(server:HTTPServer) {
   console.log("init hogya")
-  io = new Server(4000, {
+  io = new Server(server, {
     cors: {
       origin: config.SOCKET_URL,
       methods: ["GET", "POST"],

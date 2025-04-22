@@ -11,7 +11,7 @@ let io;
 const socketUsers = new Map();
 function IOinit(server) {
     console.log("init hogya");
-    io = new socket_io_1.Server(4000, {
+    io = new socket_io_1.Server(server, {
         cors: {
             origin: config_1.default.SOCKET_URL,
             methods: ["GET", "POST"],
