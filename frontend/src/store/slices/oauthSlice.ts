@@ -11,7 +11,6 @@ export const OAuthSlice = createSlice({
     initialState,
     reducers:{
         connectMail:(state,action)=>{
-            console.log(JSON.stringify(action.payload)+"payyy");
             state.connected=true
             state.auto_reply = action.payload?.auto_reply ?? state.auto_reply;
             state.onboarding_complete = action.payload?.onboarding_complete ?? state.onboarding_complete

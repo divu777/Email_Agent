@@ -121,7 +121,6 @@ router.post("/startService", async (req, res) => {
 // toggle Auto-Reply On or Off
 router.post("/toggleAutoReply", async (req, res) => {
   const { userId, auto_reply } = req.body;
-  console.log(JSON.stringify(req.body))
   if (auto_reply) {
    const result= await db.oAuth.update({
       where: { userId },

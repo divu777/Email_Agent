@@ -1,6 +1,21 @@
 import { motion } from "framer-motion";
 import { Pie } from "react-chartjs-2";
 import { AnalyticsData } from "../Insights";
+import {
+  Chart as ChartJS,
+  ArcElement,
+  Tooltip,
+  Legend,
+  Title
+} from "chart.js";
+
+ChartJS.register(
+  ArcElement,
+  Tooltip,
+  Legend,
+  Title
+);
+
 
 interface SubjectDistributionChartProps {
     analyticsData: AnalyticsData | null;

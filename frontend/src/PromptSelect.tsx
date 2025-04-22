@@ -23,7 +23,6 @@ const PromptSelect = () => {
     try {
       if(userId && !onboarding_complete){
         const result =await axios.post(`${config.BACKEND_URL}/api/v1/prompt/setprompt`, { prompt: promptLabel,userId });
-      console.log(JSON.stringify(result)+"set prompttt");
       if(!result.data){
         alert('Failed to set prompt');
       }else{

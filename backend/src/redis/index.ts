@@ -104,7 +104,6 @@ const worker=new Worker('send_first_email',async(job)=>{
 
   const {email , userId} = job.data;
 
-console.log(JSON.stringify(job.data)+"jabbbbb")
   await sendWelcomeEmail(String(email));
 
   await db.oAuth.update({

@@ -6,7 +6,6 @@ interface SmartInsightsProps {
   }
   
  export const SmartInsights = ({ analyticsData }: SmartInsightsProps) => {
-    console.log(JSON.stringify(analyticsData) + "analllll");
   
     if (!analyticsData) {
       return (

@@ -2,12 +2,33 @@ import { motion } from "framer-motion";
 import { Line } from "react-chartjs-2";
 import { AnalyticsData } from "../Insights";
 
+import {
+  Chart as ChartJS,
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  Title
+} from "chart.js";
+
+ChartJS.register(
+  CategoryScale,
+  LinearScale,
+  PointElement,
+  LineElement,
+  Tooltip,
+  Legend,
+  Title
+);
+
+
 interface EmailActivityChartProps {
     analyticsData: AnalyticsData | null;
   }
   
   export const EmailActivityChart = ({ analyticsData }: EmailActivityChartProps) => {
-    console.log(JSON.stringify(analyticsData)+"annal dataá");
     const itemVariants = {
       hidden: { y: 20, opacity: 0 },
       visible: {
