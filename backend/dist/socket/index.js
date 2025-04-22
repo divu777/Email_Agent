@@ -1,15 +1,19 @@
 "use strict";
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.settingNewEvent = void 0;
 exports.IOinit = IOinit;
 const socket_io_1 = require("socket.io");
+const config_1 = __importDefault(require("../config"));
 let io;
 const socketUsers = new Map();
 function IOinit(server) {
     console.log("init hogya");
     io = new socket_io_1.Server(4000, {
         cors: {
-            origin: "http://localhost:5173",
+            origin: config_1.default.SOCKET_URL,
             methods: ["GET", "POST"],
         },
     });

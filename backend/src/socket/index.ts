@@ -1,5 +1,6 @@
 import { Server as HTTPServer } from "http";
 import { DefaultEventsMap, Server } from "socket.io";
+import config from "../config";
 let io: Server<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any>;
 
 const socketUsers = new Map(); 
@@ -8,7 +9,7 @@ function IOinit(server:HTTPServer) {
   console.log("init hogya")
   io = new Server(4000, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: config.SOCKET_URL,
       methods: ["GET", "POST"],
     },
   });

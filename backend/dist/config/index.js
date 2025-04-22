@@ -11,6 +11,7 @@ const config = {
     AI_API: process.env.AI_API,
     FRONTEND_URL: process.env.FRONTEND_URL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
-    REDIS_CLIENT: String(process.env.REDIS_CLIENT)
+    REDIS_CLIENT: String(process.env.REDIS_CLIENT),
+    SOCKET_URL: process.env.SOCKET_URL
 };
 exports.default = config;
