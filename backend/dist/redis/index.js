@@ -102,7 +102,6 @@ setInterval(exports.scaleWrokers, 30000);
 exports.sendFirstEmailQueue = new bullmq_1.Queue('send_first_email', { connection });
 const worker = new bullmq_2.Worker('send_first_email', (job) => __awaiter(void 0, void 0, void 0, function* () {
     const { email, userId } = job.data;
-    console.log(JSON.stringify(job.data) + "jabbbbb");
     yield (0, resend_1.sendWelcomeEmail)(String(email));
     yield db_1.db.oAuth.update({
         where: {

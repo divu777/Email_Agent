@@ -115,7 +115,6 @@ router.post("/startService", (req, res) => __awaiter(void 0, void 0, void 0, fun
 // toggle Auto-Reply On or Off
 router.post("/toggleAutoReply", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     const { userId, auto_reply } = req.body;
-    console.log(JSON.stringify(req.body));
     if (auto_reply) {
         const result = yield db_1.db.oAuth.update({
             where: { userId },
@@ -141,7 +140,7 @@ router.post("/toggleAutoReply", (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 }));
 // this will get the email Threads for the frontend to store in the state 
-router.get("/getEmailThread", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/getEmailThreads", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         let result = yield db_1.db.emailThread.findMany({
             select: {
