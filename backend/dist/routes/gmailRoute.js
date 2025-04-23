@@ -140,9 +140,13 @@ router.post("/toggleAutoReply", (req, res) => __awaiter(void 0, void 0, void 0, 
     }
 }));
 // this will get the email Threads for the frontend to store in the state 
-router.get("/getEmailThreads", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+router.get("/getEmailThreads/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
+        let { userId } = req.params;
         let result = yield db_1.db.emailThread.findMany({
+            where: {
+                userId
+            },
             select: {
                 id: true,
                 userId: true,

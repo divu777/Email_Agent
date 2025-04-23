@@ -120,7 +120,7 @@ const MailView = () => {
 
   const fetchEmails = async () => {
     try {
-      const { data } = await axios.get(`${config.BACKEND_URL}/api/v1/mail/getEmailThread`)
+      const { data } = await axios.get(`${config.BACKEND_URL}/api/v1/mail/getEmailThreads/${userId}`)
       if (data?.data) {
         dispatch(setEmailThread(data.data))
       }
