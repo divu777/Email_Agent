@@ -43,7 +43,7 @@ class Gmail {
           expiry_date: new Date(expiry_date),
         },
       });
-      this.gmail = google.gmail({ version: "v1", auth: this.oauth2Client });
+      this.gmail = google.gmail({ version: "v1", auth: this.oauth2Client });      
       console.log("Tokens set successfully:", tokens);
     } catch (error) {
       console.error("Error setting tokens:", error);

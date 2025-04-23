@@ -50,59 +50,69 @@ export const handleEmail = async ( userIdClerk: string, prompt:PromptEnums) => {
                   for (const message of history.messages) {
           
 
-                      const msg = await oauth2.users.messages.get({ userId: "me", id: message.id! });
-
-                      const categories = msg.data.labelIds || [];
-                      if (categories.includes('IMPORTANT') && categories.includes('UNREAD')) {
-    
-                      const subjectHeader = msg.data.payload?.headers?.find((head) => head.name === "Subject")?.value || "No Subject";
-                      const emailSnippet = msg.data.snippet || "";
-                      const emailContent = `${emailSnippet}\n\n${subjectHeader}`;
-                      const fromHeader = msg.data.payload?.headers?.find((head) => head.name === "From")?.value || "No Sender";
-                      const emailMatch = fromHeader.match(/<([^>]+)>/);
-                      const senderEmail = emailMatch ? emailMatch[1] : null;
-                      const threadId = msg.data.threadId!;
-                     console.log(senderEmail+"is sender mail randddd");
-
-                    const isServiceEmail =  senderEmail?.includes("noreply") || senderEmail?.includes("do-not-reply");
-
-                    if (isServiceEmail) {
-                    console.log("Skipping auto-reply to service email:", senderEmail);
-                    await oauth2.users.messages.modify({userId:'me',id:message.id!,requestBody:{removeLabelIds:['UNREAD']}})
-                    return;
-                    }
-    
-                      let existingThread = await db.emailThread.findFirst({ where: { threadId } });
-                      if (!existingThread) {
-                          const emailData=await db.emailThread.create({
-                              data: {
-                                  threadId,
-                                  userId: userIdClerk,
-                                  subject: subjectHeader,
-                                  createdAt: new Date(Number(msg.data.internalDate)),
-                              }
-                          });
-                          settingNewEvent(emailData,'new_thread_created')
-                          console.log(`New thread created: ${threadId}`);
+                     try {
+                       const msg = await oauth2.users.messages.get({ userId: "me", id: message.id! });
+ 
+                       const categories = msg.data.labelIds || [];
+                       if (categories.includes('IMPORTANT') && categories.includes('UNREAD')) {
+     
+                       const subjectHeader = msg.data.payload?.headers?.find((head) => head.name === "Subject")?.value || "No Subject";
+                       const emailSnippet = msg.data.snippet || "";
+                       const emailContent = `${emailSnippet}\n\n${subjectHeader}`;
+                       const fromHeader = msg.data.payload?.headers?.find((head) => head.name === "From")?.value || "No Sender";
+                       const emailMatch = fromHeader.match(/<([^>]+)>/);
+                       const senderEmail = emailMatch ? emailMatch[1] : null;
+                       const threadId = msg.data.threadId!;
+                      console.log(senderEmail+"is sender mail randddd");
+ 
+                     const isServiceEmail =  senderEmail?.includes("noreply") || senderEmail?.includes("do-not-reply");
+ 
+                     if (isServiceEmail) {
+                     console.log("Skipping auto-reply to service email:", senderEmail);
+                     await oauth2.users.messages.modify({userId:'me',id:message.id!,requestBody:{removeLabelIds:['UNREAD']}})
+                     continue;
+                     }
+     
+                       let existingThread = await db.emailThread.findFirst({ where: { threadId } });
+                       if (!existingThread) {
+                           const emailData=await db.emailThread.create({
+                               data: {
+                                   threadId,
+                                   userId: userIdClerk,
+                                   subject: subjectHeader,
+                                   createdAt: new Date(Number(msg.data.internalDate)),
+                               }
+                           });
+                           settingNewEvent(emailData,'new_thread_created')
+                           console.log(`New thread created: ${threadId}`);
+                       }
+     
+                       let emailData=await db.email.create({
+                           data: {
+                               userId: userIdClerk,
+                               threadId,
+                               sender: fromHeader,
+                               recipient: "ME",
+                               context: msg.data.snippet!,
+                               ai_generated: false,
+                           }
+                       });
+ 
+                       settingNewEvent(emailData,'new_email_in_thread')
+ 
+                       console.log("Stored email in DB!");
+     
+                       await ai(emailContent, fromHeader, msg.data.id!, threadId, prompt ?? null);
+                       await oauth2.users.messages.modify({userId:'me',id:message.id!,requestBody:{removeLabelIds:['UNREAD']}})
+                     }
+                     } catch (err: any) {
+                      if (err.code === 404 || err.response?.status === 404) {
+                        console.warn(`Message not found (maybe deleted): ${message.id}`);
+                        continue; // skip this message, don't kill the whole loop
+                      } else {
+                        console.error("Unexpected error fetching message:", err);
+                        throw err; // re-throw other errors
                       }
-    
-                      let emailData=await db.email.create({
-                          data: {
-                              userId: userIdClerk,
-                              threadId,
-                              sender: fromHeader,
-                              recipient: "ME",
-                              context: msg.data.snippet!,
-                              ai_generated: false,
-                          }
-                      });
-
-                      settingNewEvent(emailData,'new_email_in_thread')
-
-                      console.log("Stored email in DB!");
-    
-                      await ai(emailContent, fromHeader, msg.data.id!, threadId, prompt ?? null);
-                      await oauth2.users.messages.modify({userId:'me',id:message.id!,requestBody:{removeLabelIds:['UNREAD']}})
                     }
                   }
               }

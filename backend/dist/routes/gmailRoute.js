@@ -17,6 +17,7 @@ const gmail_1 = require("../gmail");
 const db_1 = require("../db");
 const email_1 = require("../email");
 const redis_1 = require("../redis");
+const googleapis_1 = require("googleapis");
 const router = express_1.default.Router();
 // check if userId exists in OAuth
 router.get("/checkOAuth/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -86,6 +87,18 @@ router.post("/startService", (req, res) => __awaiter(void 0, void 0, void 0, fun
         }
         const { access_token, refresh_token, expiry_date, prompt, first_email_send, user } = result;
         yield gmail_1.gmailobj.check_expiry({ access_token, refresh_token, expiry_date }, userId);
+        const oauth2 = googleapis_1.google.gmail({
+            version: "v1",
+            auth: gmail_1.gmailobj.oauth2Client,
+        });
+        console.log("inside start email");
+        yield oauth2.users.watch({
+            userId: 'me',
+            requestBody: {
+                topicName: 'projects/moonlit-bliss-454514-c1/topics/gmail-notifs',
+                labelIds: ['INBOX'],
+            },
+        });
         if (!first_email_send) {
             redis_1.sendFirstEmailQueue.add('send-first-email', {
                 userId,
@@ -219,5 +232,17 @@ router.post("/markThreadRead/:threadId", (req, res) => __awaiter(void 0, void 0,
         console.log("Error marking emails read", err);
         return res.status(500).json({ message: "Failed to mark emails as read" });
     }
+}));
+router.post('/pubsub-webhook', (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    const msg = req.body.message;
+    if (!msg || !msg.data) {
+        return res.status(400).send("Invalid Pub/Sub message");
+    }
+    const decoded = JSON.parse(Buffer.from(msg.data, 'base64').toString());
+    const { historyId, emailAddress } = decoded;
+    console.log("New email notification for:", emailAddress, "History ID:", historyId);
+    // Do what your polling loop did — process messages
+    // await processHistoryChanges(emailAddress, historyId);
+    res.status(200).send(); // ACK the message
 }));
 exports.default = router;
