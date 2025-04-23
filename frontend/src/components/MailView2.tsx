@@ -29,8 +29,8 @@ const getRandomColor = (userId: any) => {
     "bg-pink-500",
     "bg-indigo-500",
     "bg-red-500",
-    "bg-gray-500",
-    "bg-slate-500",
+    "bg-red-500",
+    "bg-blue-500",
     "bg-teal-500",
   ]
   return colors[userId % 10]
