@@ -31,19 +31,11 @@ export default function App() {
 
 todo list 
 
-1) work on the protected route based on that wrap it around 
-prompt-select , connect-gmail and dashboard 
+1) buy domain to send first mail in resend 
 
-2) then work on the ui design of pages 
-  1) mail check the search , then infinte scrolling , also debounce 
-  and lastly show thread and read , unread status 
+2) cloud pub sub works try to see if it works and able to process and use the email better
 
-  2) in prompt get the prompt the from the backend make state 
-  then show them , if not then show error
-
-  3) then get the real data and show in the insigts 
-
-3) then work on the dahsboard design and responsive nessshel
+3) fix something below the features and some landing page UI revamp that you do yourself 
 
 
 */
