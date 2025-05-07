@@ -14,10 +14,10 @@ An AI-powered Gmail agent that reads and replies to emails intelligently using O
   Efficient in-memory tracking system for detecting new emails without push notifications.
 - 🧠 **Memory Management**  
   Keeps track of processed threads in-memory for low-latency response and scalability.
-- 🛡️ **Privacy-Focused Design**  
-  Emails are never stored—processed in memory with full user control.
-- 🧪 **Developer Friendly**  
-  Clean codebase, modular structure, and ready for extensions like summarization, tagging, etc.
+- 📊 **Real-Time Analytics**
+  Enhanced analytics dashboard with response metrics
+- 🎯 **Prompt Templates**
+  Custom prompt templates for different email contexts
 
 ---
 
