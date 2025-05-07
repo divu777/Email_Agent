@@ -35,7 +35,7 @@ An AI-powered Gmail agent that reads and replies to emails intelligently using O
 
 ## 📸 Demo
 
-> *(Optional GIF or image showing the app replying to an email)*
+> ![Preview](https://res.cloudinary.com/dwrqohfya/image/upload/v1745247710/Screenshot_2025-04-21_at_2.06.47_AM_w3p5pc_cegovk.jpg)
 
 ---
 
