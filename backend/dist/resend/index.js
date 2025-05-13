@@ -19,7 +19,7 @@ const resend = new resend_1.Resend(config_1.default.RESEND_API_KEY);
 const sendWelcomeEmail = function (email) {
     return __awaiter(this, void 0, void 0, function* () {
         const { data, error } = yield resend.emails.send({
-            from: 'Acme <onboarding@resend.dev>',
+            from: 'email-agent.divakar10x.com',
             to: email,
             subject: 'Hey, I’m Divakar — Thanks for checking out Email Agent!',
             html: `
