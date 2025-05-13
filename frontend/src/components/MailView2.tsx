@@ -252,9 +252,9 @@ const MailView = () => {
                         <h2 className={`font-semibold text-xl text-gray-800 truncate ${!email.read && "font-bold"}`}>
                           {windowWidth < 1024
                             ?( windowWidth<500 ? `${email.subject.slice(0, 10)}...`: email.subject )
-                            : email.subject.length < 20
+                            : email.subject.length < 15
                             ? email.subject
-                            : `${email.subject.slice(0, 19)}...`}
+                            : `${email.subject.slice(0, 15)}...`}
                         </h2>
                         <span className="text-xs text-gray-400 whitespace-nowrap ml-2">
                           {formatDate(email.createdAt)}
