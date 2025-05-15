@@ -4,6 +4,7 @@ import { ConnectGmail } from "./ConnectGmail";
 import Dashboard from "./Dashboard";
 import Landing from "./Landing";
 import PromptSelect from "./PromptSelect";
+import AboutMe from "./components/About";
 
 export default function App() {
   return (
@@ -13,6 +14,7 @@ export default function App() {
       <Route path='/connect-gmail' element={<ConnectGmail />} />
 
       <Route path='/dashboard' element={<Dashboard />} />
+      <Route path="/about-me" element={<AboutMe/>}/>
       <Route
         path="/prompt-select"
         element={

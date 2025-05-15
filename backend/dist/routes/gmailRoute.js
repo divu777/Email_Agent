@@ -251,4 +251,27 @@ router.post('/pubsub-webhook', (req, res) => __awaiter(void 0, void 0, void 0, f
     // await processHistoryChanges(emailAddress, historyId);
     res.status(200).send(); // ACK the message
 }));
+router.delete("/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { userId } = req.params;
+        const deleteUser = yield db_1.db.user.delete({
+            where: {
+                id: userId
+            }
+        });
+        if (!deleteUser) {
+            return res.json({
+                message: "error in deleting user",
+                success: false
+            });
+        }
+        return res.json({
+            message: "user deleted successfully",
+            success: true
+        });
+    }
+    catch (error) {
+        console.log(error + " Error in deleting the account");
+    }
+}));
 exports.default = router;

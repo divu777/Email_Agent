@@ -51,7 +51,7 @@ model EmailThread {
 model Email {
   id           Int         @id @default(autoincrement())
   userId       String
-  user         User        @relation(fields: [userId], references: [id])
+  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
   threadId     String
   thread       EmailThread @relation(fields: [threadId], references: [threadId], onDelete: Cascade)
   sender       String
