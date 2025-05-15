@@ -5,6 +5,10 @@ import { Sparkles, Mail, Calendar, Trash2 } from 'lucide-react';
 import { config } from '../config';
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../store/slices/authSlice';
+import { useDispatch } from 'react-redux';
+import { clearEmailThreads } from '../store/slices/emailSlice';
+import { disconnectMail } from '../store/slices/oauthSlice';
 
 const ProfileView = () => {
   const { user } = useUser();
@@ -23,12 +27,16 @@ const ProfileView = () => {
   const createdAt = user.createdAt ? new Date(user.createdAt).toLocaleDateString() : 'Unknown';
   const username = user.username || 'No username';
   const navigate=useNavigate();
+  const dispatch = useDispatch()
   const handleDeleteAccount = async () => {
     try {
       setLoading(true);
       const response = await axios.delete(`${config.BACKEND_URL}/api/v1/email/${user.id}`);
 
       if (response.data.success) {
+            dispatch(logout());
+            dispatch(disconnectMail());
+            dispatch(clearEmailThreads());
         await signOut(); // Logout via Clerk
         navigate("/")
       } else {
