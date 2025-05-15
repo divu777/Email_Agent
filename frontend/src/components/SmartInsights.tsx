@@ -164,7 +164,7 @@ interface SmartInsightsProps {
               <h4 className="text-sm font-medium text-gray-900">Auto-Reply Effectiveness</h4>
               <p className="text-sm text-gray-500">
                 {autoRepliedEmails > 0
-                  ? `Your auto-replies handle ${replyRate}% of incoming messages. Consider expanding your templates to cover more common inquiries.`
+                  ? `Your auto-replies handle ${replyRate.toFixed(2)}% of incoming messages. Consider expanding your templates to cover more common inquiries.`
                   : "Enable auto-replies in your settings to let our AI handle routine emails on your behalf."}
               </p>
             </div>

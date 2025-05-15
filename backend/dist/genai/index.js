@@ -44,10 +44,10 @@ GENERATE RESPONSE NOW:`;
         console.log("Raw AI Response:", rawOutput);
         try {
             const parsedOutput = JSON.parse(rawOutput.match(/```json([\s\S]*?)```/)[1]);
-            const emailMatch = fromHeader.match(/<([^>]+)>/);
-            const senderEmail = emailMatch ? emailMatch[1] : null;
-            if (!senderEmail)
-                throw new Error("Invalid sender email");
+            let senderEmail = fromHeader;
+            if (!senderEmail || !senderEmail.includes("@")) {
+                throw new Error(`Invalid sender email format: ${senderEmail}`);
+            }
             const existingEmail = yield db_1.db.email.findFirst({ where: { threadId } });
             if (!existingEmail)
                 throw new Error("Thread ID not found in the database");

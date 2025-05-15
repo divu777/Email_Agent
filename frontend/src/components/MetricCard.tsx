@@ -33,7 +33,7 @@ interface MetricCardsProps {
         title: "Auto Replies",
         value: analyticsData?.autoRepliedEmails ?? 0,
         icon: <Reply className="h-5 w-5 text-amber-500" />,
-        trend: `${analyticsData?.replyRate ?? 0}%`,
+        trend: `${analyticsData?.replyRate.toFixed(2) ?? 0}%`,
         trendColor: "text-amber-500",
         info: "Reply rate",
       },

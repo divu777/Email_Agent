@@ -61,19 +61,38 @@ export const handleEmail = async ( userIdClerk: string, prompt:PromptEnums) => {
                        const emailContent = `${emailSnippet}\n\n${subjectHeader}`;
                        const fromHeader = msg.data.payload?.headers?.find((head) => head.name === "From")?.value || "No Sender";
                        console.log(fromHeader+"   from header ");
-                       const emailMatch = fromHeader.match(/<([^>]+)>/);
-                       console.log(emailMatch+"emaill matcchhhh")
-                       const senderEmail = emailMatch ? emailMatch[1] : null;
+
+                        let senderEmail = fromHeader;
+                        const emailMatch = fromHeader.match(/<([^>]+)>/);
+
+                        if (emailMatch) {
+                          senderEmail = emailMatch[1];
+                        } else {
+                          const directEmailMatch = fromHeader.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+                          senderEmail = directEmailMatch ? directEmailMatch[1] : fromHeader;
+                        }
+
+
+                        console.log(senderEmail + " is sender mail");
+                        if(senderEmail=="mailer-daemon@googlemail.com is sender mail"){
+                                                    await oauth2.users.messages.modify({ userId: 'me', id: message.id!, requestBody: { removeLabelIds: ['UNREAD'] } });
+                            continue;
+                        }
+                        const isOnboardingEmail = senderEmail.includes("@email.agent.divakar10x.com");
+
+                        const isServiceEmail = (senderEmail.includes("noreply") || 
+                                      senderEmail.includes("do-not-reply")) && 
+                                      !isOnboardingEmail;
+
+                        if (isServiceEmail) {
+                          console.log("Skipping auto-reply to service email:", senderEmail);
+                          await oauth2.users.messages.modify({ userId: 'me', id: message.id!, requestBody: { removeLabelIds: ['UNREAD'] } });
+                          continue;
+                        }
+
                        const threadId = msg.data.threadId!;
-                      console.log(senderEmail+"is sender mail randddd");
  
-                     const isServiceEmail =  senderEmail?.includes("noreply") || senderEmail?.includes("do-not-reply");
- 
-                     if (isServiceEmail) {
-                     console.log("Skipping auto-reply to service email:", senderEmail);
-                     await oauth2.users.messages.modify({userId:'me',id:message.id!,requestBody:{removeLabelIds:['UNREAD']}})
-                     continue;
-                     }
+             
      
                        let existingThread = await db.emailThread.findFirst({ where: { threadId } });
                        if (!existingThread) {
@@ -104,16 +123,16 @@ export const handleEmail = async ( userIdClerk: string, prompt:PromptEnums) => {
  
                        console.log("Stored email in DB!");
      
-                       await ai(emailContent, fromHeader, msg.data.id!, threadId, prompt ?? null);
+                       await ai(emailContent, senderEmail, msg.data.id!, threadId, prompt ?? null);
                        await oauth2.users.messages.modify({userId:'me',id:message.id!,requestBody:{removeLabelIds:['UNREAD']}})
                      }
                      } catch (err: any) {
                       if (err.code === 404 || err.response?.status === 404) {
                         console.warn(`Message not found (maybe deleted): ${message.id}`);
-                        continue; // skip this message, don't kill the whole loop
+                        continue; 
                       } else {
                         console.error("Unexpected error fetching message:", err);
-                        throw err; // re-throw other errors
+                        throw err; 
                       }
                     }
                   }

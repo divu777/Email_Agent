@@ -47,10 +47,11 @@ GENERATE RESPONSE NOW:`;
         rawOutput!.match(/```json([\s\S]*?)```/)![1]
       );
 
-      const emailMatch = fromHeader.match(/<([^>]+)>/);
-      const senderEmail = emailMatch ? emailMatch[1] : null;
+      let senderEmail=fromHeader
 
-      if (!senderEmail) throw new Error("Invalid sender email"); 
+      if (!senderEmail || !senderEmail.includes("@")) {
+        throw new Error(`Invalid sender email format: ${senderEmail}`);
+      }
 
       const existingEmail = await db.email.findFirst({ where: { threadId } });
 

@@ -105,7 +105,14 @@ router.post("/startService", async (req, res) => {
     if(!first_email_send){
 
        addJobsToMail({userId,email:user.email})
-
+      await db.oAuth.update({
+        where:{
+          userId
+        },
+        data:{
+          first_email_send:true
+        }
+      })
         
       //     userId,
       //     email:user.email

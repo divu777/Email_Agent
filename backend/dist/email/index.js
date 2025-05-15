@@ -59,16 +59,31 @@ const handleEmail = (userIdClerk, prompt) => __awaiter(void 0, void 0, void 0, f
                                 const emailSnippet = msg.data.snippet || "";
                                 const emailContent = `${emailSnippet}\n\n${subjectHeader}`;
                                 const fromHeader = ((_f = (_e = (_d = msg.data.payload) === null || _d === void 0 ? void 0 : _d.headers) === null || _e === void 0 ? void 0 : _e.find((head) => head.name === "From")) === null || _f === void 0 ? void 0 : _f.value) || "No Sender";
+                                console.log(fromHeader + "   from header ");
+                                let senderEmail = fromHeader;
                                 const emailMatch = fromHeader.match(/<([^>]+)>/);
-                                const senderEmail = emailMatch ? emailMatch[1] : null;
-                                const threadId = msg.data.threadId;
-                                console.log(senderEmail + "is sender mail randddd");
-                                const isServiceEmail = (senderEmail === null || senderEmail === void 0 ? void 0 : senderEmail.includes("noreply")) || (senderEmail === null || senderEmail === void 0 ? void 0 : senderEmail.includes("do-not-reply"));
+                                if (emailMatch) {
+                                    senderEmail = emailMatch[1];
+                                }
+                                else {
+                                    const directEmailMatch = fromHeader.match(/([a-zA-Z0-9._-]+@[a-zA-Z0-9._-]+\.[a-zA-Z0-9_-]+)/);
+                                    senderEmail = directEmailMatch ? directEmailMatch[1] : fromHeader;
+                                }
+                                console.log(senderEmail + " is sender mail");
+                                if (senderEmail == "mailer-daemon@googlemail.com is sender mail") {
+                                    yield oauth2.users.messages.modify({ userId: 'me', id: message.id, requestBody: { removeLabelIds: ['UNREAD'] } });
+                                    continue;
+                                }
+                                const isOnboardingEmail = senderEmail.includes("@email.agent.divakar10x.com");
+                                const isServiceEmail = (senderEmail.includes("noreply") ||
+                                    senderEmail.includes("do-not-reply")) &&
+                                    !isOnboardingEmail;
                                 if (isServiceEmail) {
                                     console.log("Skipping auto-reply to service email:", senderEmail);
                                     yield oauth2.users.messages.modify({ userId: 'me', id: message.id, requestBody: { removeLabelIds: ['UNREAD'] } });
                                     continue;
                                 }
+                                const threadId = msg.data.threadId;
                                 let existingThread = yield db_1.db.emailThread.findFirst({ where: { threadId } });
                                 if (!existingThread) {
                                     const emailData = yield db_1.db.emailThread.create({
@@ -94,18 +109,18 @@ const handleEmail = (userIdClerk, prompt) => __awaiter(void 0, void 0, void 0, f
                                 });
                                 (0, socket_1.settingNewEvent)(emailData, 'new_email_in_thread');
                                 console.log("Stored email in DB!");
-                                yield (0, genai_1.ai)(emailContent, fromHeader, msg.data.id, threadId, prompt !== null && prompt !== void 0 ? prompt : null);
+                                yield (0, genai_1.ai)(emailContent, senderEmail, msg.data.id, threadId, prompt !== null && prompt !== void 0 ? prompt : null);
                                 yield oauth2.users.messages.modify({ userId: 'me', id: message.id, requestBody: { removeLabelIds: ['UNREAD'] } });
                             }
                         }
                         catch (err) {
                             if (err.code === 404 || ((_g = err.response) === null || _g === void 0 ? void 0 : _g.status) === 404) {
                                 console.warn(`Message not found (maybe deleted): ${message.id}`);
-                                continue; // skip this message, don't kill the whole loop
+                                continue;
                             }
                             else {
                                 console.error("Unexpected error fetching message:", err);
-                                throw err; // re-throw other errors
+                                throw err;
                             }
                         }
                     }

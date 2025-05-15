@@ -100,6 +100,14 @@ router.post("/startService", (req, res) => __awaiter(void 0, void 0, void 0, fun
         // });
         if (!first_email_send) {
             (0, redis_1.addJobsToMail)({ userId, email: user.email });
+            yield db_1.db.oAuth.update({
+                where: {
+                    userId
+                },
+                data: {
+                    first_email_send: true
+                }
+            });
             //     userId,
             //     email:user.email
             // }, {
