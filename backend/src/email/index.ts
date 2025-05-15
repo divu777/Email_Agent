@@ -60,7 +60,9 @@ export const handleEmail = async ( userIdClerk: string, prompt:PromptEnums) => {
                        const emailSnippet = msg.data.snippet || "";
                        const emailContent = `${emailSnippet}\n\n${subjectHeader}`;
                        const fromHeader = msg.data.payload?.headers?.find((head) => head.name === "From")?.value || "No Sender";
+                       console.log(fromHeader+"   from header ");
                        const emailMatch = fromHeader.match(/<([^>]+)>/);
+                       console.log(emailMatch+"emaill matcchhhh")
                        const senderEmail = emailMatch ? emailMatch[1] : null;
                        const threadId = msg.data.threadId!;
                       console.log(senderEmail+"is sender mail randddd");

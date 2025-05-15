@@ -5,7 +5,7 @@ const resend = new Resend(config.RESEND_API_KEY);
 
 export const sendWelcomeEmail = async function (email: string) {
   const { data, error } = await resend.emails.send({
-    from: 'email-agent.divakar10x.com',
+    from: 'onboarding@email.agent.divakar10x.com',
     to: email,
     subject: 'Hey, I’m Divakar — Thanks for checking out Email Agent!',
     html: `

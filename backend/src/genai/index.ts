@@ -50,7 +50,7 @@ GENERATE RESPONSE NOW:`;
       const emailMatch = fromHeader.match(/<([^>]+)>/);
       const senderEmail = emailMatch ? emailMatch[1] : null;
 
-      if (!senderEmail) throw new Error("Invalid sender email");
+      if (!senderEmail) throw new Error("Invalid sender email"); 
 
       const existingEmail = await db.email.findFirst({ where: { threadId } });
 

@@ -2,7 +2,7 @@ import e from "express";
 import { gmailobj } from "../gmail";
 import { db } from "../db";
 import { activeIntervals, handleEmail } from "../email";
-import { sendFirstEmailQueue } from "../redis";
+import { addJobsToMail, sendFirstEmailQueue } from "../redis";
 import { google } from "googleapis";
 
 const router = e.Router();
@@ -89,33 +89,34 @@ router.post("/startService", async (req, res) => {
 
     await gmailobj.check_expiry({ access_token, refresh_token, expiry_date}, userId);
 
-    const oauth2 = google.gmail({
-      version: "v1",
-      auth: gmailobj.oauth2Client,
-    });
+    // const oauth2 = google.gmail({
+    //   version: "v1",
+    //   auth: gmailobj.oauth2Client,
+    // });
     console.log("inside start email");
 
-    await oauth2.users.watch({
-      userId: 'me',
-      requestBody: {
-        topicName: 'projects/moonlit-bliss-454514-c1/topics/gmail-notifs',
-        labelIds: ['INBOX'], 
-      },
-    });
-
+    // await oauth2.users.watch({
+    //   userId: 'me',
+    //   requestBody: {
+    //     topicName: 'projects/moonlit-bliss-454514-c1/topics/gmail-notifs',
+    //     labelIds: ['INBOX'], 
+    //   },
+    // });
     if(!first_email_send){
-       sendFirstEmailQueue.add('send-first-email', {
+
+       addJobsToMail({userId,email:user.email})
+
         
-          userId,
-          email:user.email
+      //     userId,
+      //     email:user.email
         
-      }, {
-        attempts: 3,
-        backoff: {
-          type: 'exponential',
-          delay: 5000, // in ms
-        },
-      });
+      // }, {
+      //   attempts: 3,
+      //   backoff: {
+      //     type: 'exponential',
+      //     delay: 5000, // in ms
+      //   },
+      // });
     }
 
     handleEmail(userId,prompt);
@@ -145,7 +146,6 @@ router.post("/toggleAutoReply", async (req, res) => {
 
     await gmailobj.check_expiry({ access_token, refresh_token, expiry_date, auto_reply }, userId);
     handleEmail(userId,prompt);
-    console.log("Auto-reply service started.");
     return res.json({ message: "Auto-reply service started." });
   } else {
     if (activeIntervals[userId]) {

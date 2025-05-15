@@ -12,7 +12,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.sendFirstEmailQueue = exports.scaleWrokers = void 0;
+exports.scaleWrokers2 = exports.addJobsToMail = exports.sendFirstEmailQueue = exports.scaleWrokers = void 0;
 exports.addJobs = addJobs;
 const bullmq_1 = require("bullmq");
 const bullmq_2 = require("bullmq");
@@ -100,21 +100,64 @@ const scaleWrokers = () => __awaiter(void 0, void 0, void 0, function* () {
 exports.scaleWrokers = scaleWrokers;
 setInterval(exports.scaleWrokers, 30000);
 exports.sendFirstEmailQueue = new bullmq_1.Queue('send_first_email', { connection });
-const worker = new bullmq_2.Worker('send_first_email', (job) => __awaiter(void 0, void 0, void 0, function* () {
-    const { email, userId } = job.data;
-    yield (0, resend_1.sendWelcomeEmail)(String(email));
-    yield db_1.db.oAuth.update({
-        where: {
-            userId
-        },
-        data: {
-            first_email_send: true
+const addJobsToMail = (data) => {
+    return new Promise((resolve, reject) => {
+        try {
+            exports.sendFirstEmailQueue.add("send_first_email", data);
+            resolve();
+        }
+        catch (error) {
+            reject(error);
         }
     });
-}), { connection });
-worker.on("completed", (job) => {
-    console.log(`${job.id} has completed!`);
+};
+exports.addJobsToMail = addJobsToMail;
+const addworkers2 = () => {
+    console.log("inside workers");
+    try {
+        const worker = new bullmq_2.Worker("send_first_email", (job) => __awaiter(void 0, void 0, void 0, function* () {
+            const { email, userId } = job.data;
+            yield (0, resend_1.sendWelcomeEmail)(String(email));
+            yield db_1.db.oAuth.update({
+                where: {
+                    userId
+                },
+                data: {
+                    first_email_send: true
+                }
+            });
+        }), { connection });
+        workers.push(worker);
+        worker.on("completed", (job) => {
+            console.log(`${job.id} has completed!`);
+        });
+        worker.on("failed", (job, err) => {
+            console.log(`${job.id} has failed with ${err.message}`);
+        });
+    }
+    catch (err) {
+        console.log(`Error in Adding workers ${err}`);
+    }
+};
+const scaleWrokers2 = () => __awaiter(void 0, void 0, void 0, function* () {
+    try {
+        const { waiting } = yield exports.sendFirstEmailQueue.getJobCounts();
+        let neededWorkers = Math.ceil(waiting / 5);
+        if (neededWorkers > workers.length) {
+            while (neededWorkers > workers.length) {
+                addworkers2();
+            }
+        }
+        else {
+            while (neededWorkers < workers.length) {
+                const worker = workers.pop();
+                yield (worker === null || worker === void 0 ? void 0 : worker.close());
+            }
+        }
+    }
+    catch (err) {
+        console.log(`Error in Scaling workers:  ${err}`);
+    }
 });
-worker.on("failed", (job, err) => {
-    console.log(`${job.id} has failed with ${err.message}`);
-});
+exports.scaleWrokers2 = scaleWrokers2;
+setInterval(exports.scaleWrokers2, 30000);

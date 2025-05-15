@@ -41,6 +41,7 @@ export const ConnectGmail = () => {
     } catch (error) {
       console.error("Error connecting to Gmail:", error);
       setError("Something went wrong. Try again.");
+      navigate("/")
     } finally {
       setDisplay(false);
     }

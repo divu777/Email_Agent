@@ -99,10 +99,30 @@ setInterval(scaleWrokers, 30000);
 
 
 export const sendFirstEmailQueue = new Queue('send_first_email',{connection});
+export const addJobsToMail= (data:any)=>{
+  return new Promise<void>((resolve,reject)=>{
+    try {
+       sendFirstEmailQueue.add("send_first_email",data);
+       resolve()
+      
+    } catch (error) {
+      reject(error);
+    }
+  })
+ 
+}
 
-const worker=new Worker('send_first_email',async(job)=>{
 
-  const {email , userId} = job.data;
+
+
+const addworkers2 = () => {
+  console.log("inside workers");
+
+  try {
+    const worker = new Worker(
+      "send_first_email",
+      async (job) => {
+       const {email , userId} = job.data;
 
   await sendWelcomeEmail(String(email));
 
@@ -114,12 +134,43 @@ const worker=new Worker('send_first_email',async(job)=>{
       first_email_send: true
     }
   });
-},{connection})
+      },
+      { connection }
+    );
 
-worker.on("completed", (job) => {
-  console.log(`${job.id} has completed!`);
-});
+    workers.push(worker);
 
-worker.on("failed", (job, err) => {
-  console.log(`${job!.id} has failed with ${err.message}`);
-});
+    worker.on("completed", (job) => {
+      console.log(`${job.id} has completed!`);
+    });
+
+    worker.on("failed", (job, err) => {
+      console.log(`${job!.id} has failed with ${err.message}`);
+    });
+  } catch (err) {
+    console.log(`Error in Adding workers ${err}`);
+  }
+};
+
+
+export const scaleWrokers2 = async () => {
+  try {
+    const { waiting } = await sendFirstEmailQueue.getJobCounts();
+
+    let neededWorkers = Math.ceil(waiting / 5);
+
+    if (neededWorkers > workers.length) {
+      while (neededWorkers > workers.length) {
+        addworkers2();
+      }
+    } else {
+      while (neededWorkers < workers.length) {
+        const worker = workers.pop();
+        await worker?.close();
+      }
+    }
+  } catch (err) {
+    console.log(`Error in Scaling workers:  ${err}`);
+  }
+};
+setInterval(scaleWrokers2, 30000);

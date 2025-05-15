@@ -17,7 +17,6 @@ const gmail_1 = require("../gmail");
 const db_1 = require("../db");
 const email_1 = require("../email");
 const redis_1 = require("../redis");
-const googleapis_1 = require("googleapis");
 const router = express_1.default.Router();
 // check if userId exists in OAuth
 router.get("/checkOAuth/:userId", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
@@ -87,29 +86,29 @@ router.post("/startService", (req, res) => __awaiter(void 0, void 0, void 0, fun
         }
         const { access_token, refresh_token, expiry_date, prompt, first_email_send, user } = result;
         yield gmail_1.gmailobj.check_expiry({ access_token, refresh_token, expiry_date }, userId);
-        const oauth2 = googleapis_1.google.gmail({
-            version: "v1",
-            auth: gmail_1.gmailobj.oauth2Client,
-        });
+        // const oauth2 = google.gmail({
+        //   version: "v1",
+        //   auth: gmailobj.oauth2Client,
+        // });
         console.log("inside start email");
-        yield oauth2.users.watch({
-            userId: 'me',
-            requestBody: {
-                topicName: 'projects/moonlit-bliss-454514-c1/topics/gmail-notifs',
-                labelIds: ['INBOX'],
-            },
-        });
+        // await oauth2.users.watch({
+        //   userId: 'me',
+        //   requestBody: {
+        //     topicName: 'projects/moonlit-bliss-454514-c1/topics/gmail-notifs',
+        //     labelIds: ['INBOX'], 
+        //   },
+        // });
         if (!first_email_send) {
-            redis_1.sendFirstEmailQueue.add('send-first-email', {
-                userId,
-                email: user.email
-            }, {
-                attempts: 3,
-                backoff: {
-                    type: 'exponential',
-                    delay: 5000, // in ms
-                },
-            });
+            (0, redis_1.addJobsToMail)({ userId, email: user.email });
+            //     userId,
+            //     email:user.email
+            // }, {
+            //   attempts: 3,
+            //   backoff: {
+            //     type: 'exponential',
+            //     delay: 5000, // in ms
+            //   },
+            // });
         }
         (0, email_1.handleEmail)(userId, prompt);
         return res.json({
@@ -136,7 +135,6 @@ router.post("/toggleAutoReply", (req, res) => __awaiter(void 0, void 0, void 0, 
         const { access_token, refresh_token, expiry_date, auto_reply, prompt } = result;
         yield gmail_1.gmailobj.check_expiry({ access_token, refresh_token, expiry_date, auto_reply }, userId);
         (0, email_1.handleEmail)(userId, prompt);
-        console.log("Auto-reply service started.");
         return res.json({ message: "Auto-reply service started." });
     }
     else {
