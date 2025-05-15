@@ -13,7 +13,7 @@ import { disconnectMail } from '../store/slices/oauthSlice';
 const ProfileView = () => {
   const { user } = useUser();
   const { signOut } = useClerk();
-  const [loading, setLoading] = useState(false);
+  const [, setLoading] = useState(false);
   const [error, setError] = useState(false);
   const [showModal, setShowModal] = useState(false);
 

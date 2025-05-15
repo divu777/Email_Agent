@@ -1,4 +1,3 @@
-import React from 'react';
 import { CheckCircle, MapPin, Edit2, Github, Linkedin, Twitter, Globe } from 'lucide-react';
 import Navbar from './Navbar';
 
