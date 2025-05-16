@@ -1,11 +1,17 @@
-import { Resend } from 'resend';
+import nodemailer from 'nodemailer';
 import config from '../config';
 
-const resend = new Resend(config.RESEND_API_KEY);
+const transporter = nodemailer.createTransport({
+  service: 'gmail', 
+  auth: {
+    user: config.SMTP_EMAIL, // your email address
+    pass: config.SMTP_PASS, // your app password or real password (if not using Gmail)
+  },
+});
 
 export const sendWelcomeEmail = async function (email: string) {
-  const { data, error } = await resend.emails.send({
-    from: 'onboarding@email.agent.divakar10x.com',
+  const mailOptions = {
+    from: '"Divakar" <onboarding@email.agent.divakar10x.com>', // From email address
     to: email,
     subject: 'Hey, I’m Divakar — Thanks for checking out Email Agent!',
     html: `
@@ -18,11 +24,14 @@ export const sendWelcomeEmail = async function (email: string) {
         <p>Catch you soon,<br/>Divakar</p>
       </div>
     `,
-  });
+  };
 
-  if (error) {
-    return console.error({ error });
+  try {
+    const info = await transporter.sendMail(mailOptions);
+    console.log('Email sent:', info.response);
+    return info;
+  } catch (error) {
+    console.error('Error sending email:', error);
+    return { error };
   }
-
-  console.log({ data });
 };

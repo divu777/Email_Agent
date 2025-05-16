@@ -19,7 +19,6 @@ const router = express_1.default.Router();
 router.post("/setprompt", (req, res) => __awaiter(void 0, void 0, void 0, function* () {
     try {
         const { userId, prompt } = req.body;
-        console.table([userId, prompt]);
         const result = yield db_1.db.oAuth.update({
             where: {
                 userId

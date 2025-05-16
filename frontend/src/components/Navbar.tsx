@@ -149,7 +149,7 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="px-3 py-2">
-                <SignInButton signUpForceRedirectUrl="/prompt-select">
+                <SignInButton signUpForceRedirectUrl="/">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}

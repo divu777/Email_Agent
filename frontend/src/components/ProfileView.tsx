@@ -31,7 +31,7 @@ const ProfileView = () => {
   const handleDeleteAccount = async () => {
     try {
       setLoading(true);
-      const response = await axios.delete(`${config.BACKEND_URL}/api/v1/email/${user.id}`);
+      const response = await axios.delete(`${config.BACKEND_URL}/api/v1/mail/${user.id}`);
 
       if (response.data.success) {
             dispatch(logout());

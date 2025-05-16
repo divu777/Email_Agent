@@ -8,7 +8,6 @@ const router = e.Router()
 router.post("/setprompt",async(req,res)=>{
     try {
         const {userId,prompt}=req.body;
-        console.table([userId,prompt])
 
         const result=await db.oAuth.update({
             where:{

@@ -78,21 +78,13 @@ const MailView = () => {
   }
 
   useEffect(() => {
-    if (!userId) {
-      dispatch(logout())
-      dispatch(disconnectMail())
-      navigate("/")
-      return
-    }
+
     getOAuthAccess().then(() => {
       fetchEmails().then(() => {
         setLoading(false)
-        if (!onboarding_complete) {
-          console.log("yehhh");
-          navigate("/connect-gmail")
-        }
       })
     })
+    
     
 
     socket.emit("register", userId)

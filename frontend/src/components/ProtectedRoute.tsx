@@ -1,25 +1,46 @@
-import { Navigate } from "react-router-dom";
+// src/components/AuthWrapper.tsx
 import { useSelector } from "react-redux";
 import { RootState } from "../store/store";
+import { Navigate } from "react-router-dom";
+import { ReactNode } from "react";
 
-interface ProtectedRouteProps {
-  children: any;
-  requireGmailConnected?: boolean;
+interface AuthWrapperProps {
+  children: ReactNode;
 }
 
-const ProtectedRoute = ({ children, requireGmailConnected = false }: ProtectedRouteProps) => {
+export const AuthWrapper = ({ children }: AuthWrapperProps) => {
+  console.log("proooo , called")
   const { userId } = useSelector((state: RootState) => state.authreducer);
-  const { onboarding_complete } = useSelector((state: RootState) => state.OAuthreducer);
+  const { connected, onboarding_complete } = useSelector(
+    (state: RootState) => state.OAuthreducer
+  );
 
+  // 1. No user → redirect to landing
   if (!userId) {
     return <Navigate to="/" replace />;
   }
 
-  if (requireGmailConnected && !onboarding_complete) {
+  // Special case: If we're on /connect-gmail but already connected
+  if (window.location.pathname === "/connect-gmail" && connected) {
+    return onboarding_complete 
+      ? <Navigate to="/dashboard" replace />
+      : <Navigate to="/prompt-select" replace />;
+  }
+
+  // Special case: If we're on /prompt-select but onboarding is already complete
+  if (window.location.pathname === "/prompt-select" && onboarding_complete) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  // 2. For all other routes, check the requirements
+  if (!connected && window.location.pathname !== "/connect-gmail") {
     return <Navigate to="/connect-gmail" replace />;
   }
 
-  return children;
-};
+  if (connected && !onboarding_complete && window.location.pathname !== "/prompt-select") {
+    return <Navigate to="/prompt-select" replace />;
+  }
 
-export default ProtectedRoute;
+  // If all checks pass, render the children
+  return <>{children}</>;
+};

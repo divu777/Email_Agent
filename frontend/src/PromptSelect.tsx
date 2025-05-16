@@ -16,8 +16,8 @@ const prompts = [
 const PromptSelect = () => {
   const dispatch= useDispatch();
   const navigate=useNavigate();
-  const {onboarding_complete} = useSelector((state:RootState)=>state.OAuthreducer);
-  const [loading,setLoading]=useState(true);
+  const {connected,onboarding_complete} = useSelector((state:RootState)=>state.OAuthreducer);
+  const [loading,setLoading]=useState(false);
   const {userId}= useSelector((state:RootState)=>state.authreducer);
   const handleSelect = async (promptLabel: string) => {
     try {
@@ -39,13 +39,16 @@ const PromptSelect = () => {
     }
   };
 
-  useEffect(()=>{
-    setLoading(false);
-    if(userId && onboarding_complete){
-      navigate("/dashboard")
-    }
+  // useEffect(()=>{
+  //   setLoading(false);
+  //   if(userId && onboarding_complete){
+  //     navigate("/dashboard")
+  //   }
+  //   if(userId && !connected){
+  //     navigate("/connect-gmail")
+  //   }
         
-  },[userId,onboarding_complete])
+  // },[userId,onboarding_complete,connected])
 
 
  

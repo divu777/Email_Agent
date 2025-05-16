@@ -13,13 +13,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sendWelcomeEmail = void 0;
-const resend_1 = require("resend");
+const nodemailer_1 = __importDefault(require("nodemailer"));
 const config_1 = __importDefault(require("../config"));
-const resend = new resend_1.Resend(config_1.default.RESEND_API_KEY);
+const transporter = nodemailer_1.default.createTransport({
+    service: 'gmail',
+    auth: {
+        user: config_1.default.SMTP_EMAIL, // your email address
+        pass: config_1.default.SMTP_PASS, // your app password or real password (if not using Gmail)
+    },
+});
 const sendWelcomeEmail = function (email) {
     return __awaiter(this, void 0, void 0, function* () {
-        const { data, error } = yield resend.emails.send({
-            from: 'onboarding@email.agent.divakar10x.com',
+        const mailOptions = {
+            from: '"Divakar" <onboarding@email.agent.divakar10x.com>', // From email address
             to: email,
             subject: 'Hey, I’m Divakar — Thanks for checking out Email Agent!',
             html: `
@@ -32,11 +38,16 @@ const sendWelcomeEmail = function (email) {
         <p>Catch you soon,<br/>Divakar</p>
       </div>
     `,
-        });
-        if (error) {
-            return console.error({ error });
+        };
+        try {
+            const info = yield transporter.sendMail(mailOptions);
+            console.log('Email sent:', info.response);
+            return info;
         }
-        console.log({ data });
+        catch (error) {
+            console.error('Error sending email:', error);
+            return { error };
+        }
     });
 };
 exports.sendWelcomeEmail = sendWelcomeEmail;
