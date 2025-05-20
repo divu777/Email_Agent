@@ -11,7 +11,7 @@ const config = {
     AI_API: process.env.AI_API,
     FRONTEND_URL: process.env.FRONTEND_URL,
     RESEND_API_KEY: process.env.RESEND_API_KEY,
-    REDIS_CLIENT: String(process.env.REDIS_CLIENT),
+    REDIS_CLIENT: String(process.env.REDIS_CLIENT_DEV),
     SOCKET_URL: process.env.SOCKET_URL,
     SMTP_PASS: process.env.SMTP_PASS,
     SMTP_EMAIL: process.env.SMTP_EMAIL

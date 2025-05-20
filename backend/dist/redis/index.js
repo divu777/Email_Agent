@@ -22,7 +22,8 @@ const gmail_1 = require("../gmail");
 const resend_1 = require("../resend");
 const db_1 = require("../db");
 const config_1 = __importDefault(require("../config"));
-const connection = new ioredis_1.default(config_1.default.REDIS_CLIENT, { maxRetriesPerRequest: null, tls: {} });
+// ,tls:{} to be added for prod
+const connection = new ioredis_1.default(config_1.default.REDIS_CLIENT, { maxRetriesPerRequest: null });
 const myQueue = new bullmq_1.Queue("email", { connection });
 function addJobs(jobs) {
     return __awaiter(this, void 0, void 0, function* () {

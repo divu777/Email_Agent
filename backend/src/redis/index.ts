@@ -6,7 +6,8 @@ import { gmailobj } from "../gmail";
 import { sendWelcomeEmail } from "../resend";
 import { db } from "../db";
 import config from "../config";
-const connection = new IORedis(config.REDIS_CLIENT!,{ maxRetriesPerRequest: null ,tls:{}});
+// ,tls:{} to be added for prod
+const connection = new IORedis(config.REDIS_CLIENT!,{ maxRetriesPerRequest: null });
 
 const myQueue = new Queue("email",{connection});
 export async function addJobs(jobs: any) {

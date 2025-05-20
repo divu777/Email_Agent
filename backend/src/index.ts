@@ -2,7 +2,6 @@ import e from "express";
 import cors from "cors";
 import { gmailobj } from "./gmail";
 import mailRoutes from "./routes/gmailRoute";
-import process from "process";
 import { createServer } from "http";
 import { IOinit } from "./socket";
 import config from "./config";
