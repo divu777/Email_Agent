@@ -31,7 +31,7 @@ app.get("/api/v1/auth/callback",(req,res)=>{
          return
     }
 
-     GoogleOAuthManager.getToken({code})
+     co.getTokens({code})
 
     //  get user info and save it in db 
 
@@ -43,7 +43,7 @@ app.get("/api/v1/auth/callback",(req,res)=>{
         sameSite:"none"
     })
 
-    res.redirect("/dashboard")
+    res.redirect("http:localhost:5173/dashboard")
     return 
 })
 

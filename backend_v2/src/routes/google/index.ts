@@ -26,6 +26,11 @@ router.get("/authorizationUrl",(req,res)=>{
     }
 })
 
+router.get("/emails",(req,res)=>{
+    
+})
+
+
 
 
 
