@@ -32,6 +32,4 @@ router.get("/emails",(req,res)=>{
 
 
 
-
-
 export default router

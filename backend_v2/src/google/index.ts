@@ -1,4 +1,4 @@
-import { google } from "googleapis";
+import { gmail_v1, google } from "googleapis";
 import config from "../config/index";
 export class GoogleOAuthManager{
    static SCOPES=["https://www.googleapis.com/auth/gmail.modify","https://www.googleapis.com/auth/userinfo.profile","https://www.googleapis.com/auth/userinfo.email"];
@@ -23,6 +23,8 @@ export class GoogleOAuthManager{
             config.REDIRECT_URL
         )
     }
+
+     
 
     static getAuthorizationURL(userId:string){
         let state=JSON.stringify({userId});
@@ -59,6 +61,56 @@ export class GoogleOAuthManager{
         }
     }
 
+    async getUserProfile(gmail:gmail_v1.Gmail){
+        try {
+            const userInfo = await gmail.users.getProfile({userId:"me"});
+            return userInfo
+        } catch (error) {
+            console.log("Error in getting user profile "+error)
+        }
+    }
+
+
+    /* 
+    this is for the base - dashboard with uk primary emails with header to show in the ui as default we pass primary in labels ,
+    could be use to get and show specific emails like important , sent , drafts , all , spam etc 
+    */
+    async getEmailIdsMetaDataList(gmail:gmail_v1.Gmail,labels:any[]){
+        try {
+
+            const emailThreadIds= await gmail.users.messages.list({userId:'me',maxResults:20,labelIds:labels})
+            
+            return emailThreadIds
+        } catch (error) {
+            console.log("Error in getting the Email "+error)
+        }
+    }
+
+    // get threads all chats data to show to the user , also can be user to use as context to provide in the prompt
+    async getEmailData(gmail:gmail_v1.Gmail,threadId:string){
+     try {
+
+            const emailData= await gmail.users.messages.get({userId:'me',id:threadId})
+            
+            return emailData
+        } catch (error) {
+            console.log("Error in getting the Email "+error)
+        }
+    }
+
+
+
+
+
+    
+
+
+
+
 
 
 }
+
+
+
+// in the dashboard 1) get email metadata ( ids , header ) - > pass it to map. sort for primary emails only because thats the defaul
