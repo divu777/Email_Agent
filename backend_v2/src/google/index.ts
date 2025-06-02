@@ -99,18 +99,35 @@ export class GoogleOAuthManager{
     }
 
 
-
-
-
-    
-
-
-
-
-
+    async sendEmail(gmail:gmail_v1.Gmail,data:any){
+        try {
+            
+            const sendMessage = gmail.users.messages.send({
+                userId:"me",
+                requestBody:{
+                    internalDate:Date.now().toString(),
+                    payload:{
+                        body:{
+                            data:Buffer.from("hello bhaiyaa").toString('base64')
+                        },
+                        headers:[{
+                           name:"To",
+                           value:"divakarjaiswal707@gmail.com" 
+                        },{
+                            name:'Subject',
+                            value:'Just Checking In'
+                        }
+                    ]
+                    }
+                }
+            })
+        } catch (error) {
+            console.log("Erorr in sending the email")
+        }
+    }
 
 }
 
 
 
-// in the dashboard 1) get email metadata ( ids , header ) - > pass it to map. sort for primary emails only because thats the defaul
+// in the dashboard 1) get email metadata ( ids , header ) - > pass it to map. sort for primary emails only because thats the default 
