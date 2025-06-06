@@ -2,18 +2,15 @@ import { gmail_v1, google } from "googleapis";
 import config from "../config/index";
 export class GoogleOAuthManager{
    static SCOPES=["https://www.googleapis.com/auth/gmail.modify","https://www.googleapis.com/auth/userinfo.profile","https://www.googleapis.com/auth/userinfo.email"];
-    private oauth2Client:any
-    private tokens:any
-    private gmail:any
+    public tokens:any
+    public gmail:any
 
     constructor(tokens?:any){
-        this.oauth2Client=new google.auth.OAuth2(
-            config.CLIENT_ID,
-            config.CLIENT_SECRET,
-            config.REDIRECT_URL
-        )
         if(tokens){
             this.tokens=tokens
+            const client = GoogleOAuthManager.createOAuthClient()
+            client.setCredentials(tokens);
+            this.gmail = google.gmail({ version: "v1", auth: client });
         }
     }
     static createOAuthClient(){
@@ -24,11 +21,19 @@ export class GoogleOAuthManager{
         )
     }
 
-     
+     static async getNewTokens(tokens:any){
+        const client = GoogleOAuthManager.createOAuthClient()
+        client.setCredentials(tokens)
+
+        const token = await client.refreshAccessToken()
+
+        return token
+     }
 
     static getAuthorizationURL(userId:string){
         let state=JSON.stringify({userId});
         state=Buffer.from(state).toString("base64");
+        console.log(state + " maaadeee")
         const client=this.createOAuthClient()
         const url= client.generateAuthUrl({
             access_type:"offline",
@@ -44,17 +49,21 @@ export class GoogleOAuthManager{
         }
     }
 
-     async getTokens(q:any):Promise<any>{
+     async getTokens(code:string):Promise<any>{
         try {
 
-            if(!q.code){
+            if(!code){
                 throw new Error("Authorization code is missing");
             }
             const client =GoogleOAuthManager.createOAuthClient()
-            const {tokens}=await client.getToken(q.code);
+            const {tokens}=await client.getToken(code);
             client.setCredentials(tokens);
-                return  { gmaill : google.gmail({ version: "v1", auth: client }) ,tokens  
-        } 
+            this.gmail= google.gmail({ version: "v1", auth: client });
+            this.tokens=tokens  
+
+
+            return tokens
+        
             
         } catch (error) {
             console.log("Error in setting tokens "+error);
@@ -63,8 +72,9 @@ export class GoogleOAuthManager{
 
     async getUserProfile(gmail:gmail_v1.Gmail){
         try {
-            const userInfo = await gmail.users.getProfile({userId:"me"});
-            return userInfo
+            const userInfo = await this.gmail.users.getProfile({userId:"me"});
+            console.log("user info "+ JSON.stringify(userInfo))
+            return userInfo.data
         } catch (error) {
             console.log("Error in getting user profile "+error)
         }
@@ -75,11 +85,11 @@ export class GoogleOAuthManager{
     this is for the base - dashboard with uk primary emails with header to show in the ui as default we pass primary in labels ,
     could be use to get and show specific emails like important , sent , drafts , all , spam etc 
     */
-    async getEmailIdsMetaDataList(gmail:gmail_v1.Gmail,labels:any[]){
+    async getEmailIdsMetaDataList(gmail:gmail_v1.Gmail,labels:any[]=["primary"]){
         try {
 
             const emailThreadIds= await gmail.users.messages.list({userId:'me',maxResults:20,labelIds:labels})
-            
+            console.log("email threads ids " + emailThreadIds)
             return emailThreadIds
         } catch (error) {
             console.log("Error in getting the Email "+error)
@@ -91,7 +101,7 @@ export class GoogleOAuthManager{
      try {
 
             const emailData= await gmail.users.messages.get({userId:'me',id:threadId})
-            
+            console.log("email data "+ emailData)
             return emailData
         } catch (error) {
             console.log("Error in getting the Email "+error)
@@ -102,7 +112,7 @@ export class GoogleOAuthManager{
     async sendEmail(gmail:gmail_v1.Gmail,data:any){
         try {
             
-            const sendMessage = gmail.users.messages.send({
+            const sendMessage = await gmail.users.messages.send({
                 userId:"me",
                 requestBody:{
                     internalDate:Date.now().toString(),
@@ -130,4 +140,15 @@ export class GoogleOAuthManager{
 
 
 
-// in the dashboard 1) get email metadata ( ids , header ) - > pass it to map. sort for primary emails only because thats the default 
+/*
+learn session-based auth cookie-jwt based auth 
+first the new user flow works and now makes entry in the database 
+
+second step have to check with ki if token exist and redirect to dashboard for old user 
+third step is more like dashboard making using the client 
+making the authmiddleware and state map property for uk userId : { tokens  } 
+
+fouth is UI and using it with genai and streaming it with help tools or calls 
+
+*/
+

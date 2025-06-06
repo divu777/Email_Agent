@@ -7,7 +7,6 @@ import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { config } from "../config"
-import { socket } from "../utils/socket"
 import { logout } from "../store/slices/authSlice"
 import {
   updateEmailThread,
@@ -77,38 +76,38 @@ const MailView = () => {
     }
   }
 
-  useEffect(() => {
+  // useEffect(() => {
 
-    getOAuthAccess().then(() => {
-      fetchEmails().then(() => {
-        setLoading(false)
-      })
-    })
+  //   getOAuthAccess().then(() => {
+  //     fetchEmails().then(() => {
+  //       setLoading(false)
+  //     })
+  //   })
     
     
 
-    socket.emit("register", userId)
+  //   socket.emit("register", userId)
 
-    const handleNewEmailInThread = (data: any) => {
-      dispatch(updateEmailThread(data.threadId))
-    }
+  //   const handleNewEmailInThread = (data: any) => {
+  //     dispatch(updateEmailThread(data.threadId))
+  //   }
 
-    const handleNewThreadCreated = (data: any) => {
-      dispatch(addEmailThread(data))
-    }
+  //   const handleNewThreadCreated = (data: any) => {
+  //     dispatch(addEmailThread(data))
+  //   }
 
-    socket.on("new_email_in_thread", handleNewEmailInThread)
-    socket.on("new_thread_created", handleNewThreadCreated)
+  //   socket.on("new_email_in_thread", handleNewEmailInThread)
+  //   socket.on("new_thread_created", handleNewThreadCreated)
 
     
 
 
 
-    return () => {
-      socket.off("new_email_in_thread", handleNewEmailInThread)
-      socket.off("new_thread_created", handleNewThreadCreated)
-    }
-  }, [userId, onboarding_complete])
+  //   return () => {
+  //     socket.off("new_email_in_thread", handleNewEmailInThread)
+  //     socket.off("new_thread_created", handleNewThreadCreated)
+  //   }
+  // }, [userId, onboarding_complete])
 
   const fetchEmails = async () => {
     try {

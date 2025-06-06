@@ -5,6 +5,7 @@ import Dashboard from "./Dashboard";
 import Landing from "./Landing";
 import PromptSelect from "./PromptSelect";
 import AboutMe from "./components/About";
+import Login from "./components/Login";
 
 export default function App() {
   return (
@@ -37,6 +38,9 @@ export default function App() {
             </>
           }
         />
+        <Route 
+        path="/login"
+        element={<Login/>}/>
       </Routes>
     </BrowserRouter>
   );
