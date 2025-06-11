@@ -3,7 +3,6 @@ import { GoogleOAuthManager } from '../google';
 import { randomUUIDv7 } from 'bun';
 import jwt from 'jsonwebtoken'
 import config from '../config';
-import { PrismaClient } from '@prisma/client';
 import { prisma } from '../db';
 
 const router=express.Router()
@@ -44,13 +43,14 @@ router.get("/callback",async(req,res)=>{
 
     const token = jwt.sign({email:emailAddress},config.JWT_SECRET!)
 
-    res.cookie("token",token,{
-        httpOnly:false,
-        secure:false,
-        sameSite:"none"
-    })
+    // res.cookie("token",token,{
+    //     httpOnly:false,
+    //     secure:false,
+    //     sameSite:"lax"
+    // })
 
-    res.redirect("http://localhost:5173/about-me")
+    res.redirect("http://localhost:5173/about-me?token="+token)
+    res.send("done");
     return 
 })
 
@@ -58,7 +58,7 @@ router.get("/callback",async(req,res)=>{
 router.get("/authorizationUrl",(req,res)=>{
     try {
         const token = req.cookies.token
-        console.log(JSON.stringify(token))
+        console.log(JSON.stringify(token)+"old userrrr ")
         if(token){
             res.send("http://localhost:5173/about-me")
             return

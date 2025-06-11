@@ -29,7 +29,7 @@ export default function App() {
             </>
           }
         />
-        <Route path="/about-me" element={<AboutMe />} />
+        <Route path="/about-me/*" element={<AboutMe />} />
         <Route
           path="/prompt-select"
           element={

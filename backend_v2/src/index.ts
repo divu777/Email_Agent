@@ -13,7 +13,7 @@ const app=express();
 app.use(cookieParser())
 
 app.use(session({
-  secret: 'your-secret-key',
+  secret: 'supersecretpassword',
   resave: false,
   saveUninitialized: true,
   cookie: {

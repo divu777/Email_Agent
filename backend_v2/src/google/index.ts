@@ -73,7 +73,6 @@ export class GoogleOAuthManager{
     async getUserProfile(gmail:gmail_v1.Gmail){
         try {
             const userInfo = await this.gmail.users.getProfile({userId:"me"});
-            console.log("user info "+ JSON.stringify(userInfo))
             return userInfo.data
         } catch (error) {
             console.log("Error in getting user profile "+error)
