@@ -140,7 +140,6 @@ export class GoogleOAuthManager{
 
 
 /*
-learn session-based auth cookie-jwt based auth 
 first the new user flow works and now makes entry in the database 
 
 second step have to check with ki if token exist and redirect to dashboard for old user 

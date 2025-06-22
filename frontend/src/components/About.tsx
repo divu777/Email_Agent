@@ -1,7 +1,7 @@
 import { CheckCircle, MapPin, Edit2, Github, Linkedin, Twitter, Globe } from 'lucide-react';
 import Navbar from './Navbar';
 import { useEffect } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, } from 'react-router-dom';
 
 
 

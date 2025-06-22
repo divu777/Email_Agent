@@ -1,3 +1,4 @@
+import { Pie } from 'react-chartjs-2';
 import express from 'express'
 import { GoogleOAuthManager } from '../google';
 import { randomUUIDv7 } from 'bun';
@@ -28,18 +29,47 @@ router.get("/callback",async(req,res)=>{
 
    const {emailAddress} = await obj.getUserProfile(obj.gmail)
 
+   const emailExist = await prisma.user.findUnique({
+    where:{
+        email:emailAddress
+    }
+   })
 
-   await prisma.user.create({
-    data:{
-        email:emailAddress,
-        name:"Guest",
+
+// this is done specifically for users whoes account exist but no cookie so they had to give access again with us and we don't want to lose the other info by creating new entry
+// right now not that useful as right now we will reply with mcp but won't save any other user detail but in future 
+// with prompt prefrence , model preference for reply could be stored 
+   await prisma.user.upsert({
+    where:{
+        email:emailAddress
+    },
+    update:{
         access_token,
         refresh_token,
-        expiry_date:new Date(expiry_date)
+        expiry_date
     },
-
+    create:{
+        email:emailAddress,
+        access_token,
+        refresh_token,
+        expiry_date
+    }
    })
-    
+
+       
+       
+       await prisma.user.create({
+           data:{
+               email:emailAddress,
+               name:"Guest",
+               access_token,
+               refresh_token,
+               expiry_date:new Date(expiry_date)
+            },
+            
+        })
+        
+    }
 
     const token = jwt.sign({email:emailAddress},config.JWT_SECRET!)
 
