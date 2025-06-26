@@ -1,119 +1,107 @@
-import { Pie } from 'react-chartjs-2';
-import express from 'express'
-import { GoogleOAuthManager } from '../google';
-import { randomUUIDv7 } from 'bun';
-import jwt from 'jsonwebtoken'
-import config from '../config';
-import { prisma } from '../db';
+import express from "express";
+import { GoogleOAuthManager } from "../google";
+import { randomUUIDv7 } from "bun";
+import jwt from "jsonwebtoken";
+import config from "../config";
+import { prisma } from "../db";
+import { authTokenMiddleware } from "../middleware";
+import { GlobalUser } from "../mail";
 
-const router=express.Router()
+const router = express.Router();
 
-router.get("/callback",async(req,res)=>{
+router.get("/callback", async (req, res) => {
+  const { state, code } = req.query;
+  if (state != req.session.state) {
+    res.redirect("http://localhost:5173/login");
+    return;
+  }
 
-    const {state,code}=req.query
-    console.log(state +"   gottttt   "+ code)
-    console.log(req.session.state +"    req state");
-    if(state!=req.session.state){
-         res.redirect("http://localhost:5173/login")
-         return
-    }
+  if (!code) {
+    res.redirect("http://localhost:5173");
+    return;
+  }
 
-    if(!code){
-        res.redirect("http://localhost:5173")
-        return
-    }
+  const obj = new GoogleOAuthManager();
+  const { access_token, refresh_token, expiry_date } = await obj.getTokens(
+    String(code)
+  );
 
+  const { emailAddress } = await obj.getUserProfile(obj.gmail);
 
-    const obj = new GoogleOAuthManager();
-   const {access_token,refresh_token,expiry_date} = await obj.getTokens(String(code))
-
-   const {emailAddress} = await obj.getUserProfile(obj.gmail)
-
-   const emailExist = await prisma.user.findUnique({
-    where:{
-        email:emailAddress
-    }
-   })
-
-
-// this is done specifically for users whoes account exist but no cookie so they had to give access again with us and we don't want to lose the other info by creating new entry
-// right now not that useful as right now we will reply with mcp but won't save any other user detail but in future 
-// with prompt prefrence , model preference for reply could be stored 
-   await prisma.user.upsert({
-    where:{
-        email:emailAddress
+  const emailExist = await prisma.user.findUnique({
+    where: {
+      email: emailAddress,
     },
-    update:{
-        access_token,
-        refresh_token,
-        expiry_date
+  });
+
+  await prisma.user.upsert({
+    where: {
+      email: emailAddress,
     },
-    create:{
-        email:emailAddress,
-        access_token,
-        refresh_token,
-        expiry_date
+    update: {
+      access_token,
+      refresh_token,
+      expiry_date: new Date(expiry_date),
+    },
+    create: {
+      email: emailAddress,
+      access_token,
+      refresh_token,
+      expiry_date: new Date(expiry_date),
+    },
+  });
+
+  const token = jwt.sign({ email: emailAddress }, config.JWT_SECRET!);
+
+  const isLocalhost = req.hostname === "localhost";
+
+  res.cookie("token", token, {
+    httpOnly: true,
+    secure: !isLocalhost,
+    sameSite: "lax",
+  });
+  res.redirect("http://localhost:5173/dashboard");
+  return;
+});
+
+router.get("/authorizationUrl", (req, res) => {
+  try {
+    const token = req.cookies.token;
+    console.log(JSON.stringify(token) + "old userrrr ");
+    if (token) {
+      res.send("http://localhost:5173/about-me");
+      return;
     }
-   })
+    const randomId = randomUUIDv7();
+    const { url, state } = GoogleOAuthManager.getAuthorizationURL(randomId);
+    req.session.state = state;
 
-       
-       
-       await prisma.user.create({
-           data:{
-               email:emailAddress,
-               name:"Guest",
-               access_token,
-               refresh_token,
-               expiry_date:new Date(expiry_date)
-            },
-            
-        })
-        
-    }
+    res.send(url);
+  } catch (error) {
+    console.log("Error in gettting Authorization URl ", error);
+    res.json({
+      message: "Error in getting Auth URl",
+      success: false,
+    });
+    return;
+  }
+});
 
-    const token = jwt.sign({email:emailAddress},config.JWT_SECRET!)
+router.get("/emails", authTokenMiddleware, async(req, res) => {
+  try {
+    const token = GlobalUser[req.email!]
+    const client = new GoogleOAuthManager(token)
 
-    // res.cookie("token",token,{
-    //     httpOnly:false,
-    //     secure:false,
-    //     sameSite:"lax"
-    // })
+    const response= await client.getEmailIdsMetaDataList()
+    console.log(JSON.stringify(response)+"")    
+  } catch (error) {
+    console.log("Error in getting emails " + error);
+    res.json({
+        message:"Error in getting emails",
+        success:false
+    })
+    return;
+  }
+});
 
-    res.redirect("http://localhost:5173/about-me?token="+token)
-    res.send("done");
-    return 
-})
-
-
-router.get("/authorizationUrl",(req,res)=>{
-    try {
-        const token = req.cookies.token
-        console.log(JSON.stringify(token)+"old userrrr ")
-        if(token){
-            res.send("http://localhost:5173/about-me")
-            return
-        }
-        const randomId = randomUUIDv7()
-        const {url ,state} = GoogleOAuthManager.getAuthorizationURL(randomId);
-        req.session.state=state
-
-        res.send(url);
-        
-        
-    } catch (error) {
-        console.log("Error in gettting Authorization URl ",error);
-        res.json({
-            message:"Error in getting Auth URl",
-            success:false
-        })
-        return
-    }
-})
-
-router.get("/emails",(req,res)=>{
-    
-})
-
-
-
-export default router
+export default router;

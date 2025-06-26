@@ -84,12 +84,11 @@ export class GoogleOAuthManager{
     this is for the base - dashboard with uk primary emails with header to show in the ui as default we pass primary in labels ,
     could be use to get and show specific emails like important , sent , drafts , all , spam etc 
     */
-    async getEmailIdsMetaDataList(gmail:gmail_v1.Gmail,labels:any[]=["primary"]){
+    async getEmailIdsMetaDataList(gmail?:gmail_v1.Gmail,labels:any[]=["INBOX"]){
         try {
 
-            const emailThreadIds= await gmail.users.messages.list({userId:'me',maxResults:20,labelIds:labels})
-            console.log("email threads ids " + emailThreadIds)
-            return emailThreadIds
+            const emailThreadIds= await this.gmail.users.messages.list({userId:'me',maxResults:20,labelIds:labels})
+            return emailThreadIds.data
         } catch (error) {
             console.log("Error in getting the Email "+error)
         }
