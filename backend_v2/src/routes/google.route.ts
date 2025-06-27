@@ -26,7 +26,11 @@ router.get("/callback", async (req, res) => {
     String(code)
   );
 
-  const { emailAddress } = await obj.getUserProfile(obj.gmail);
+  const  emailAddress  = await obj.getUserProfile();
+
+  if(!emailAddress){
+    return
+  }
 
   const emailExist = await prisma.user.findUnique({
     where: {
@@ -87,13 +91,44 @@ router.get("/authorizationUrl", (req, res) => {
   }
 });
 
+
+
 router.get("/emails", authTokenMiddleware, async(req, res) => {
   try {
     const token = GlobalUser[req.email!]
     const client = new GoogleOAuthManager(token)
 
-    const response= await client.getEmailIdsMetaDataList()
-    console.log(JSON.stringify(response)+"")    
+    const response = await client.getEmailIdsMetaDataList()
+
+    if(!response || !response.messages){
+      return
+    }
+
+    let MessageArray = []
+
+    MessageArray = await Promise.all ( response.messages.map((msg:any) => {
+         return client.getEmailData(msg.id)!
+    }));
+
+    MessageArray = MessageArray.map((message)=>{
+      
+      let from = message?.impheaders?.filter((head)=>head.name=="From")[0]?.value || ""
+     let  subject =  message?.impheaders?.filter((head)=>head.name=="Subject")[0]?.value || ""
+     
+     return{
+      id: message?.id,
+    from: from,
+    subject: subject,
+    snippet: message?.snippet,
+     }
+  })
+
+    res.json({
+      message:"fetch data successfully",
+      array:MessageArray,
+      success:true
+    })
+    return
   } catch (error) {
     console.log("Error in getting emails " + error);
     res.json({

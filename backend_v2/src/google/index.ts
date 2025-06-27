@@ -3,7 +3,7 @@ import config from "../config/index";
 export class GoogleOAuthManager{
    static SCOPES=["https://www.googleapis.com/auth/gmail.modify","https://www.googleapis.com/auth/userinfo.profile","https://www.googleapis.com/auth/userinfo.email"];
     public tokens:any
-    public gmail:any
+    public gmail: gmail_v1.Gmail | null = null;
 
     constructor(tokens?:any){
         if(tokens){
@@ -70,10 +70,10 @@ export class GoogleOAuthManager{
         }
     }
 
-    async getUserProfile(gmail:gmail_v1.Gmail){
+    async getUserProfile(gmail?:gmail_v1.Gmail){
         try {
-            const userInfo = await this.gmail.users.getProfile({userId:"me"});
-            return userInfo.data
+            const userInfo = await this.gmail!.users.getProfile({userId:"me"});
+            return userInfo.data.emailAddress
         } catch (error) {
             console.log("Error in getting user profile "+error)
         }
@@ -84,10 +84,10 @@ export class GoogleOAuthManager{
     this is for the base - dashboard with uk primary emails with header to show in the ui as default we pass primary in labels ,
     could be use to get and show specific emails like important , sent , drafts , all , spam etc 
     */
-    async getEmailIdsMetaDataList(gmail?:gmail_v1.Gmail,labels:any[]=["INBOX"]){
+    async getEmailIdsMetaDataList(gmail?:gmail_v1.Gmail,labels:any[]=["IMPORTANT"]){
         try {
 
-            const emailThreadIds= await this.gmail.users.messages.list({userId:'me',maxResults:20,labelIds:labels})
+            const emailThreadIds= await this.gmail!.users.messages.list({userId:'me',maxResults:20,labelIds:labels})
             return emailThreadIds.data
         } catch (error) {
             console.log("Error in getting the Email "+error)
@@ -95,12 +95,14 @@ export class GoogleOAuthManager{
     }
 
     // get threads all chats data to show to the user , also can be user to use as context to provide in the prompt
-    async getEmailData(gmail:gmail_v1.Gmail,threadId:string){
+    async getEmailData(threadId:string,gmail?:gmail_v1.Gmail){
      try {
 
-            const emailData= await gmail.users.messages.get({userId:'me',id:threadId})
-            console.log("email data "+ emailData)
-            return emailData
+            const emailData= await this.gmail!.users.messages.get({userId:'me',id:threadId,format:'metadata'})
+
+            const impheaders = emailData.data.payload?.headers?.filter((head)=>head.name ==="From" || head.name==="Subject")
+            delete emailData.data.payload
+            return {...emailData.data,impheaders}
         } catch (error) {
             console.log("Error in getting the Email "+error)
         }
