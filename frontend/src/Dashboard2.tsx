@@ -29,7 +29,7 @@ const Dashboard2 = () => {
   }, []);
 
   return (
-    <>
+    <div className="bg-black">
       <Sidebar
         setActiveView={setActiveView}
         activeView={activeView}
@@ -76,7 +76,7 @@ const Dashboard2 = () => {
           <div className="text-gray-400 text-center mt-20 text-xl">Select an email to read</div>
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

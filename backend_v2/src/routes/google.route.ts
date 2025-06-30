@@ -73,7 +73,7 @@ router.get("/authorizationUrl", (req, res) => {
     const token = req.cookies.token;
     console.log(JSON.stringify(token) + "old userrrr ");
     if (token) {
-      res.send("http://localhost:5173/about-me");
+      res.send("http://localhost:5173/dashboard");
       return;
     }
     const randomId = randomUUIDv7();

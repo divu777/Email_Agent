@@ -1,9 +1,7 @@
 @import "tailwindcss";
 
 
-html{
-    background-color: black;
-}
+
 
 /* Hide scrollbars but keep scroll */
 .scrollbar-hide {
