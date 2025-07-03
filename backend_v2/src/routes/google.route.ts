@@ -117,6 +117,7 @@ router.get("/emails", authTokenMiddleware, async(req, res) => {
      
      return{
       id: message?.id,
+      threadId: message?.threadId,
     from: from,
     subject: subject,
     snippet: message?.snippet,
@@ -138,5 +139,54 @@ router.get("/emails", authTokenMiddleware, async(req, res) => {
     return;
   }
 });
+
+
+
+router.get("/emails/:threadId",authTokenMiddleware,async(req,res)=>{
+  const {threadId} = req.params
+
+  if(!threadId){
+    console.log("no threadid");
+    return
+  }
+  try {
+    const email = req.email;
+
+    if(!email){
+      console.log("no email in the req")
+      return
+    }
+
+    const tokens = GlobalUser[email]
+
+    if(!tokens){
+      console.log("no tokens available ");
+      return 
+    }
+
+
+    const gmalInstance = new GoogleOAuthManager(tokens)
+
+    const data = await gmalInstance.getfullThreadId(threadId,'metadata')
+
+
+
+    res.json({
+      message:"data fetched of the email",
+      success:true,
+      data
+    })
+    return 
+
+    
+  } catch (error) {
+    console.log("error in getting thread "+error)
+    res.json({
+      message:"Error in getting thread "+threadId,
+      success:false
+    })
+    return
+  }
+})
 
 export default router;

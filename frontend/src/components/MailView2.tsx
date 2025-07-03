@@ -1,16 +1,14 @@
 "use client"
 
-import { useCallback, useEffect, useState } from "react"
+import { useCallback, useState } from "react"
 import { Search, Inbox, Mail, ChevronLeft, Loader2, RefreshCw } from "lucide-react"
 import axios from "axios"
 import { useDispatch, useSelector } from "react-redux"
 import { useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
 import { config } from "../config"
-import { logout } from "../store/slices/authSlice"
 import {
-  updateEmailThread,
-  addEmailThread,
+
   setEmailThread,
   clearSelectedThread,
   setSelectedThread,
@@ -39,7 +37,6 @@ const MailView = () => {
   const dispatch = useDispatch()
   const { userId } = useSelector((state: RootState) => state.authreducer)
   const [showMobileThread, setShowMobileThread] = useState(false)
-  const { onboarding_complete } = useSelector((state: RootState) => state.OAuthreducer)
   const { auto_reply } = useSelector((state: RootState) => state.OAuthreducer)
   const emails = useSelector((state: RootState) => state.emailThreadReducer)
   const [autoReply, setAutoReply] = useState(auto_reply)
@@ -60,54 +57,7 @@ const MailView = () => {
       console.error("Failed to fetch thread details", err)
     }
   }
-  const getOAuthAccess = async () => {
-    try {
-      const result = await axios.post(`${config.BACKEND_URL}/api/v1/mail/startService`, { userId })
-      if (!result.data) {
-        dispatch(disconnectMail())
-        navigate("/")
-      } else {
-        dispatch(connectMail(result.data.data))
-      }
-    } catch (error) {
-      console.error("Error connecting:", error)
-      dispatch(disconnectMail())
-      navigate("/")
-    }
-  }
 
-  // useEffect(() => {
-
-  //   getOAuthAccess().then(() => {
-  //     fetchEmails().then(() => {
-  //       setLoading(false)
-  //     })
-  //   })
-    
-    
-
-  //   socket.emit("register", userId)
-
-  //   const handleNewEmailInThread = (data: any) => {
-  //     dispatch(updateEmailThread(data.threadId))
-  //   }
-
-  //   const handleNewThreadCreated = (data: any) => {
-  //     dispatch(addEmailThread(data))
-  //   }
-
-  //   socket.on("new_email_in_thread", handleNewEmailInThread)
-  //   socket.on("new_thread_created", handleNewThreadCreated)
-
-    
-
-
-
-  //   return () => {
-  //     socket.off("new_email_in_thread", handleNewEmailInThread)
-  //     socket.off("new_thread_created", handleNewThreadCreated)
-  //   }
-  // }, [userId, onboarding_complete])
 
   const fetchEmails = async () => {
     try {
@@ -160,7 +110,7 @@ const MailView = () => {
           <div className="relative">
             <input
               type="text"
-              placeholder="Search emails..."
+              placeholder="Search emails..k.kdfnddf"
               className="w-full px-4 py-3 pl-10 bg-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-sm transition-all duration-300"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
