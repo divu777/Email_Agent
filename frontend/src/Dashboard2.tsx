@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
 import Sidebar from "./components/SideBar";
 import axios from "axios";
+import {  Star } from "lucide-react";
 
-type EmailsType = {
+export type EmailsType = {
   id: string;
   threadId: string;
   snippet: string;
@@ -38,96 +39,29 @@ const Dashboard2 = () => {
     fetchEmailHeaders();
   }, []);
 
-  const handleEmailClick = async (threadId: string) => {
+  const handleEmailClick = async (threadId:string) => {
     const response = await axios.get(
       `http://localhost:3000/api/v1/google/emails/${threadId}`,
       { withCredentials: true }
     );
-    console.log(JSON.stringify(response.data.data) + "????????????");
     setEmail(response.data.data);
     setselectedMail(true);
   };
 
-  //   return (
-  //     <div className="bg-black">
-  //       <Sidebar
-  //         setActiveView={setActiveView}
-  //         activeView={activeView}
-  //         isCollapsed={isCollapsed}
-  //         setIsCollapsed={setIsCollapsed}
-  //       />
-  //       <div
-  //         className={`h-screen w-auto ${isCollapsed ? "lg:ml-20" : "lg:ml-64"} flex px-5 bg-[#0d0d0d] text-white`}
-  //       >
-  //         {/* Left Email Panel */}
-  //         <div className="h-full w-2/5 bg-[#1a1a1a] flex flex-col p-5 space-y-4 border-r border-orange-500">
-  //           {/* Topbar / Search */}
-  //           <div className="w-full">
-  //             <input
-  //               type="text"
-  //               placeholder="Search emails..."
-  //               className="w-full px-4 py-3 bg-[#121212] text-white border border-[#333] rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 shadow-sm transition-all duration-300"
-  //             />
-  //           </div>
 
-  //           {/* Email List */}
-  //           <div className="flex-1 overflow-y-auto space-y-2 scrollbar-hide">
-  //             {emails &&
-  //               emails.map((email, index) => (
-  //                 <div
-  //                   key={index}
-  //                   className="bg-[#222] hover:bg-[#2c2c2c] transition-colors cursor-pointer p-4 rounded-md border border-transparent hover:border-orange-500"
-  //                   onClick={(e)=>handleEmailClick(email.threadId)}
-  //                 >
-  //                   <p className="text-sm text-orange-400 font-semibold">
-  //                     {email.subject || "No Subject"}
-  //                   </p>
-  //                   <p className="text-xs text-gray-400">{email.from || "Unknown Sender"}</p>
-  //                   <p className="text-sm mt-1 text-gray-300">
-  //                     {email.snippet?.substr(0, 60)}...
-  //                   </p>
-  //                 </div>
-  //               ))}
-  //           </div>
-  //         </div>
+  const handleGenerateReply = async (emailselected: EmailType)=>{
+    const response = await axios.post(`http://localhost:3000/api/v1/genai/reply}`,{
+      withCredentials:true
+    }, {
+        data:{
+          email:emailselected
+        }
+      })
 
-  //         {/* Right Panel */}
-  //         {selectedMail ? (
-  //   <div className="flex flex-col h-full space-y-6 overflow-y-auto pr-4">
-  //     {/* Header: Subject & From */}
-  //     <div className="border-b border-orange-500 pb-4">
-  //       <h2 className="text-2xl font-semibold text-orange-400">
-  //         {email?.impheaders.find(h => h.name === "Subject")?.value || "No Subject"}
-  //       </h2>
-  //       <p className="text-sm text-gray-400 mt-1">
-  //         From: {email?.impheaders.find(h => h.name === "From")?.value || "Unknown Sender"}
-  //       </p>
-  //     </div>
+    console.log(JSON.stringify(response.data)+"---->reply recieved for thread");
 
-  //     {/* Messages Timeline */}
-  //     <div className="flex flex-col space-y-4">
-  //       {email?.messages.map((msg, idx) => (
-  //         <div
-  //           key={msg.id}
-  //           className="bg-[#1e1e1e] p-4 rounded-md border border-[#2d2d2d] shadow-sm"
-  //         >
-  //           <div className="text-sm text-gray-500 mb-1">Message #{idx + 1}</div>
-  //           <p className="text-sm text-gray-300 leading-relaxed">
-  //             {msg.snippet}
-  //           </p>
-  //         </div>
-  //       ))}
-  //     </div>
-  //   </div>
-  // ) : (
-  //   <div className="text-gray-400 flex items-center justify-center w-full text-center mt-20 text-xl">
-  //     Select an email to read
-  //   </div>
-  // )}
+  }
 
-  //       </div>
-  //     </div>
-  //   );
 
   return (
     <div className="bg-black min-h-screen">
@@ -179,13 +113,13 @@ const Dashboard2 = () => {
 
         {/* Right Email Viewer */}
         <div className="flex-1 flex flex-col relative overflow-hidden">
-  {selectedMail ? (
+  {selectedMail && email ? (
     <>
       {/* Thread scrollable area */}
       <div className="flex-1 overflow-y-auto pr-2 space-y-6 mt-4 pb-40">
-        {email?.messages.map((msg, idx) => {
+        {email.messages.map((msg) => {
           const fromHeader =
-            email?.impheaders.find((h) => h.name === "From")?.value ||
+            email.impheaders.find((h) => h.name === "From")?.value ||
             "Unknown Sender";
           const timestamp = new Date().toLocaleString();
 
@@ -219,26 +153,36 @@ const Dashboard2 = () => {
 
       {/* Reply Box - Stays Fixed at Bottom */}
       <div className="absolute bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-[#2d2d2d] pt-4 px-4 pb-6">
-        <h3 className="text-sm text-gray-400 mb-2">Reply</h3>
-        <div className="flex flex-col space-y-3 bg-[#1a1a1a] p-4 rounded-lg shadow-md">
-          <textarea
-            rows={4}
-            placeholder="Write your reply..."
-            className="w-full bg-[#121212] text-white border border-[#333] rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500 resize-none"
-          />
-          <div className="flex justify-between items-center">
-            <div className="flex items-center space-x-3">
-              <button className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-5 py-2 rounded-md transition-colors">
-                Send
-              </button>
-              <button className="text-gray-400 text-sm hover:text-gray-200">
-                Attach
-              </button>
-            </div>
-            <div className="text-gray-500 text-sm">Ctrl + Enter to send</div>
+      <h3 className="text-sm text-gray-400 mb-2">Reply</h3>
+      <div className="flex flex-col space-y-3 bg-[#1a1a1a] p-4 rounded-lg shadow-md">
+        <textarea
+          rows={4}
+          placeholder="Write your reply..."
+          className="w-full bg-[#121212] text-white border border-[#333] rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500 resize-none"
+        />
+        <div className="flex justify-between items-center">
+          {/* Left Action Buttons */}
+          <div className="flex items-center space-x-3">
+            <button className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-5 py-2 rounded-md transition-colors">
+              Send
+            </button>
+            <button className="text-gray-400 hover:text-gray-200 text-sm transition">
+              Attach
+            </button>
+          </div>
+
+          {/* Right Action Buttons and Shortcut */}
+          <div className="flex items-center space-x-4">
+            <button className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-md transition-colors"
+            onClick={()=>handleGenerateReply(email)}>
+              <Star size={16} />
+              Generate
+            </button>
+
           </div>
         </div>
       </div>
+    </div>
     </>
   ) : (
     <div className="text-gray-500 flex items-center justify-center w-full h-full text-lg">

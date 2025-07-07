@@ -60,25 +60,41 @@ const generateReply = async(context:contextType)=>{
 
   # TASK
 
-  Generate a reply email now, following all instructions above.
-  `
+  Generate a reply email now, following all instructions above. 
+
+  **IMPORTANT: Return your response in JSON format with this exact structure:**
+  {
+    "body": "your email reply content here"
+  }
+  Do not return thoughts or explanations. Only return a final JSON object with the reply.
+
+  Only return the JSON object, no additional text or explanations.
+  `;
 
   try {
     
   
 
   const chatCompletion = await client.chatCompletion({
-  model: "deepseek-ai/DeepSeek-R1-0528",
-  provider: "hyperbolic",
+  model: "deepseek-ai/DeepSeek-V3",
+  provider: "auto",
   messages : [ 
     {
       role:'system',
-      context:SYSTEM_PROMPT
+      content:SYSTEM_PROMPT
     }
-  ]
+  ],
+  temperature: 0.7
 });
+    const data = JSON.parse(chatCompletion.choices[0]?.message.content ?? "")
 
-console.log(JSON.stringify(chatCompletion));
+    if(!data){
+      console.log("error");
+      return
+    }
+
+    console.log(data.body)
+
 
 
 } catch (error) {
