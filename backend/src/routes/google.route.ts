@@ -3,10 +3,9 @@ import { GoogleOAuthManager } from "../google";
 import { randomUUIDv7 } from "bun";
 import jwt from "jsonwebtoken";
 import config from "../config";
-import { prisma } from "../db";
 import { authTokenMiddleware } from "../middleware";
+import {prisma} from "../../prisma/index"
 import { GlobalUser } from "../ai/mail";
-
 const router = express.Router();
 
 router.get("/callback", async (req, res) => {
@@ -168,8 +167,6 @@ router.get("/emails/:threadId",authTokenMiddleware,async(req,res)=>{
     const gmalInstance = new GoogleOAuthManager(tokens)
 
     const data = await gmalInstance.getfullThreadId(threadId,'metadata')
-
-
 
     res.json({
       message:"data fetched of the email",

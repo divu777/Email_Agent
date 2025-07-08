@@ -1,21 +1,20 @@
 import express from 'express'
 
-import { authTokenMiddleware } from '../middleware';
 import { EmailTypeSchema } from '../types';
 
-import type { GlobalUserType } from "../types";
+import { authTokenMiddleware } from '../middleware';
+import { generateReply } from '../ai/mail';
 
 
 
-export const GlobalUser:GlobalUserType={}
 
 
 const router=express.Router()
 
 
-router.get("/reply",authTokenMiddleware,async(req,res)=>{
+router.post("/reply",authTokenMiddleware,async(req,res)=>{
   try {
-    const validSchema = EmailTypeSchema.safeParse(req.body)
+    const validSchema = EmailTypeSchema.safeParse(req.body.email)
 
     if(!validSchema.success){
         res.json({
@@ -25,9 +24,30 @@ router.get("/reply",authTokenMiddleware,async(req,res)=>{
         return
     }
 
-    const {id,messages,impheaders} = req.body
+
+    
+
+    const {messages} = validSchema.data
+
+    const reply = await generateReply({
+      user:req.email!,
+      user_input:null,
+      emails:messages
+    })
+
+    if(!reply){
+      res.json({
+        reply:"Please try again, after some time."
+      })
+      return
+    }
 
 
+    res.json({
+      reply
+    })
+
+    return 
 
 
 

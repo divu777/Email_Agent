@@ -1,24 +1,12 @@
 import { InferenceClient } from "@huggingface/inference";
+import type { contextType, GlobalUserType } from "../../types";
+export const GlobalUser:GlobalUserType={}
 
 
 
 const client = new InferenceClient(process.env.HF_TOKEN);
 
-type contextType ={
-  user: string , 
-  user_input : {
-    subject : string,
-    body : string
-  } | null, 
-  emails:{
-    body:string
-  }[]
-  ,
-  subject:string
-}
-
-
-const generateReply = async(context:contextType)=>{
+export const generateReply = async(context:contextType)=>{
 
   const SYSTEM_PROMPT = `
   # IDENTITY
@@ -56,7 +44,7 @@ const generateReply = async(context:contextType)=>{
 
   Here are all previous emails in the thread (as objects):
   
-  ${context.emails.map((email, idx) => `\n[Email ${idx + 1}] MIME: text/plain\n${email.body}`).join('\n')}
+  ${context.emails.map((email, idx) => `\n[Email ${idx + 1}] MIME: text/plain\n${email.snippet}`).join('\n')}
 
   # TASK
 
@@ -88,12 +76,14 @@ const generateReply = async(context:contextType)=>{
 });
     const data = JSON.parse(chatCompletion.choices[0]?.message.content ?? "")
 
+    //console.log(JSON.stringify(data))
+
     if(!data){
       console.log("error");
       return
     }
 
-    console.log(data.body)
+    return data.body
 
 
 
@@ -103,16 +93,7 @@ const generateReply = async(context:contextType)=>{
 }
 
 
-generateReply({
-  user : 'Divakar',
-  user_input: null,
-  emails:[
-    {
-      body:"hello son how are you , hope you are doing good in college just got mail regarding your grades this summer those were nice but you gotta work little better in coding those were bad grades . regards Ramesh Jaiswal "
-    }
-  ],
-  subject: "Just checking in"
-})
+
 
 
 // | MIME Type                  | Description                         |

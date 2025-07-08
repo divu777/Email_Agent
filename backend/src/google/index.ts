@@ -130,26 +130,35 @@ export class GoogleOAuthManager {
         format,
       });
 
-      const impheaders = data.messages![0]?.payload?.headers?.filter(
+      console.log((JSON.stringify(data)))
+      // const impheaders = data.messages![0]?.payload?.headers?.filter(
+      //   (head) =>
+      //     head.name === "From" ||
+      //     head.name === "Subject" ||
+      //     head.name === "Date" ||
+      //     head.name === "To"
+      // );
+
+
+      data.messages = data.messages!.map((message) => {
+         const impheaders = message?.payload?.headers?.filter(
         (head) =>
           head.name === "From" ||
           head.name === "Subject" ||
-          head.value === "Date" ||
-          head.value === "To"
+          head.name === "Date" ||
+          head.name === "To"
       );
-
-      data.messages = data.messages!.map((message) => {
         delete message.payload;
         return {
           id: message.id,
           snippet: message.snippet,
           labels: message.labelIds,
+          impheaders
         };
       });
 
       return {
         ...data,
-        impheaders,
       };
     } catch (error) {
       console.log("error in getting the whole thread " + error);
@@ -164,12 +173,12 @@ export class GoogleOAuthManager {
           internalDate: Date.now().toString(),
           payload: {
             body: {
-              data: Buffer.from("hello bhaiyaa").toString("base64"),
+              data: Buffer.from(data.body).toString("base64"),
             },
             headers: [
               {
                 name: "To",
-                value: "divakarjaiswal707@gmail.com",
+                value: data.to,
               },
               {
                 name: "Subject",
@@ -183,6 +192,44 @@ export class GoogleOAuthManager {
       console.log("Erorr in sending the email");
     }
   }
+
+  async replyToThread(data:any){
+    try {
+      await this.gmail?.users.messages.send({userId:'me',
+        requestBody:{
+          internalDate:Date.now().toString(),
+          payload:{
+            body:{
+              data:Buffer.from(data.body).toString('base64')
+            },
+            headers:[
+              {
+                name:'To',
+                value:data.to
+              },
+              {
+                name:'References',
+                value:data.threadId
+              },
+              {
+                name:'In-Reply-To',
+                value:data.lastMessageId
+              },
+              {
+                name:'Subject',
+                value:data.subject
+              }
+            ]
+          }
+        }
+      })
+    } catch (error) {
+      console.log("error in replying within the thread")
+    }
+  }
 }
+
+// message['References'] = message_id
+// message['In-Reply-To'] = message_id
 
 

@@ -11,20 +11,31 @@ export type EmailsType = {
   subject: string;
 };
 
+
+export type EmailSummary = {
+  id:string;
+  snippet:string
+  labels:string[],
+  impheaders: { value: string; name: string }[];
+}
+
 type EmailType = {
   id: string;
   messages: EmailsType[];
   impheaders: { value: string; name: string }[];
 };
-
+type EmailType2 = {
+  id: string;
+  messages: EmailSummary[];
+};
 const Dashboard2 = () => {
   const [selectedMail, setselectedMail] = useState<boolean>(false);
   const [chatVisible, setChatVisible] = useState(false);
   const [activeView, setActiveView] = useState("mail");
   const [isCollapsed, setIsCollapsed] = useState(false);
-  const [email, setEmail] = useState<EmailType | null>(null);
+  const [email, setEmail] = useState<EmailType2 | null>(null);
   const [emails, setEmails] = useState<EmailsType[] | null>([]);
-
+  const [response, setResponse] = useState<string>("");
   useEffect(() => {
     const fetchEmailHeaders = async () => {
       const response = await axios.get(
@@ -33,6 +44,7 @@ const Dashboard2 = () => {
           withCredentials: true,
         }
       );
+      //console.log(JSON.stringify(response.data.array))
       setEmails(response.data.array);
     };
 
@@ -46,21 +58,28 @@ const Dashboard2 = () => {
     );
     setEmail(response.data.data);
     setselectedMail(true);
+
+   console.log(JSON.stringify(response.data.data))
   };
 
 
-  const handleGenerateReply = async (emailselected: EmailType)=>{
-    const response = await axios.post(`http://localhost:3000/api/v1/genai/reply}`,{
-      withCredentials:true
-    }, {
-        data:{
-          email:emailselected
-        }
-      })
+  const handleGenerateReply = async (emailselected: EmailType2) => {
+    console.log("--------");
+    const response = await axios.post(
+      `http://localhost:3000/api/v1/genai/reply`,
+      {
+        email: emailselected,
+      },
+      {
+        withCredentials: true,
+      }
+    );
 
-    console.log(JSON.stringify(response.data)+"---->reply recieved for thread");
-
-  }
+    console.log(
+      JSON.stringify(response.data) + "---->reply recieved for thread"
+    );
+    setResponse(response.data.reply);
+  };
 
 
   return (
@@ -118,9 +137,8 @@ const Dashboard2 = () => {
       {/* Thread scrollable area */}
       <div className="flex-1 overflow-y-auto pr-2 space-y-6 mt-4 pb-40">
         {email.messages.map((msg) => {
-          const fromHeader =
-            email.impheaders.find((h) => h.name === "From")?.value ||
-            "Unknown Sender";
+          const fromHeader = msg.impheaders.find((h) => h.name === "From")?.value || "Unknown Sender";
+          const subject = msg.impheaders.find((h)=>h.name==="Subject")?.value || "No subject"
           const timestamp = new Date().toLocaleString();
 
           return (
@@ -136,6 +154,9 @@ const Dashboard2 = () => {
                 <div className="flex justify-between items-center mb-1">
                   <p className="text-sm font-semibold text-orange-300">
                     {fromHeader}
+                  </p>
+                  <p className="text-sm font-semibold text-orange-300">
+                    {subject}
                   </p>
                   <span className="text-xs text-gray-500">{timestamp}</span>
                 </div>
@@ -157,6 +178,8 @@ const Dashboard2 = () => {
       <div className="flex flex-col space-y-3 bg-[#1a1a1a] p-4 rounded-lg shadow-md">
         <textarea
           rows={4}
+           value={response} 
+           onChange={(e) => setResponse(e.target.value)}
           placeholder="Write your reply..."
           className="w-full bg-[#121212] text-white border border-[#333] rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500 resize-none"
         />

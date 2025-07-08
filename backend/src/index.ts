@@ -4,9 +4,7 @@ import config from './config';
 import googleRouter from "./routes/google.route"
 import genAiRouter from "./routes/genAi.routes"
 import 'express-session'
-import { GoogleOAuthManager } from './google';
 import cookieParser from 'cookie-parser';
-import jwt from 'jsonwebtoken';
 import session from 'express-session';
 const app=express();
 

@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 
 import jwt, { type JwtPayload } from "jsonwebtoken";
+import { prisma } from "../../prisma";
 import { GlobalUser } from "../ai/mail";
-import { prisma } from "../db";
 
 export const authTokenMiddleware = async (
   req: Request,
@@ -55,7 +55,6 @@ export const authTokenMiddleware = async (
     }
 
     req.email = decoded.email;
-
     next();
   } catch (error) {
     console.log("Error in the middleware : " + error);
