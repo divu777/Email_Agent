@@ -33,7 +33,8 @@ export const generateReply = async(context:contextType)=>{
       - Match the tone and style used by the user in earlier emails.
 
   3. **Personalization**
-    - Use the user's name "${context.user}" in the closing of the email (e.g., "Best regards, John").
+    - In the email closing, extract the user's name from their email address ${context.user} (e.g., from divakarjaiswal@gmail.com, use "Divakar").
+    - Use this name in the sign-off (e.g., Best regards, Divakar), but vary the closing statement in each email to avoid repetition. Ensure each sign-off feels natural and appropriate to the tone of the message.
 
 
   # USER_INPUT

@@ -1,10 +1,5 @@
 import { Link } from "react-router-dom";
-import {
-  SignInButton,
-  SignOutButton,
-  UserButton,
-  useUser,
-} from "@clerk/clerk-react";
+
 import { motion } from "framer-motion";
 
 import {  useEffect, useState } from "react";
@@ -113,7 +108,7 @@ const Navbar = () => {
             )}
             {loggedIn ? (
               <div className="flex flex-col space-y-2 px-3 py-2">
-                <UserButton />
+                {/* <UserButton />
                 <SignOutButton redirectUrl="/">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
@@ -122,11 +117,11 @@ const Navbar = () => {
                   >
                     Log Out
                   </motion.button>
-                </SignOutButton>
+                </SignOutButton> */}
               </div>
             ) : (
               <div className="px-3 py-2">
-                <SignInButton signUpForceRedirectUrl="/">
+                {/* <SignInButton signUpForceRedirectUrl="/">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -137,7 +132,7 @@ const Navbar = () => {
                       →
                     </span>
                   </motion.button>
-                </SignInButton>
+                </SignInButton> */}
               </div>
             )}
           </div>

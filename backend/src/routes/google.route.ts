@@ -6,6 +6,7 @@ import config from "../config";
 import { authTokenMiddleware } from "../middleware";
 import {prisma} from "../../prisma/index"
 import { GlobalUser } from "../ai/mail";
+import z from "zod/v4";
 const router = express.Router();
 
 router.get("/callback", async (req, res) => {
@@ -183,6 +184,53 @@ router.get("/emails/:threadId",authTokenMiddleware,async(req,res)=>{
       success:false
     })
     return
+  }
+})
+
+const ReplyThreadSchema = z.object({
+  body:z.string(),
+  subject:z.string(),
+  references:z.string(),
+  to : z.email(),
+  messageId:z.string()
+
+})
+
+export type replyType = z.infer<typeof ReplyThreadSchema>
+
+// sending reply to a thread
+router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
+  const email = req.email
+  try {
+
+    if(!email){
+      console.log("here")
+      return 
+    }
+
+    //console.log(JSON.stringify(req.body))
+    const validSchema = ReplyThreadSchema.safeParse(req.body);
+
+    if(!validSchema.success){
+      res.json({
+        message:"Not valid schema",
+        success:false
+      })
+      return
+    }
+
+    validSchema.data
+
+    const tokens = GlobalUser[email]
+
+    const gmail = new GoogleOAuthManager(tokens)
+
+    console.log(JSON.stringify(validSchema.data)+"]]]]]]")
+
+    //gmail.replyToThread(validSchema.data)
+    
+  } catch (error) {
+    console.log("Error in sending reply")
   }
 })
 

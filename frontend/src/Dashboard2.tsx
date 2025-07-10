@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import Sidebar from "./components/SideBar";
 import axios from "axios";
 import {  Star } from "lucide-react";
+import { getCookie } from "./utils/dateFormat";
 
 export type EmailsType = {
   id: string;
@@ -51,6 +52,7 @@ const Dashboard2 = () => {
     fetchEmailHeaders();
   }, []);
 
+
   const handleEmailClick = async (threadId:string) => {
     const response = await axios.get(
       `http://localhost:3000/api/v1/google/emails/${threadId}`,
@@ -58,7 +60,7 @@ const Dashboard2 = () => {
     );
     setEmail(response.data.data);
     setselectedMail(true);
-
+    setResponse("")
    console.log(JSON.stringify(response.data.data))
   };
 
@@ -80,6 +82,44 @@ const Dashboard2 = () => {
     );
     setResponse(response.data.reply);
   };
+
+  const handleSendReply = async(email:EmailType2)=>{
+      const userEmail = getCookie("email-agent");
+      console.log(userEmail+"===")
+
+  const lastMessageNotFromMe = [...email.messages]
+    .reverse()
+    .find(msg => {
+      const fromHeader = msg.impheaders.find(h => h.name === "From");
+      return fromHeader && !fromHeader.value.includes(userEmail || "");
+    })?.impheaders || [];
+    console.log(lastMessageNotFromMe)
+
+
+
+    const body  = response;
+    const messageIdHeader = lastMessageNotFromMe.find((head)=>head.name==="Message-ID")
+    const referencesHeader = lastMessageNotFromMe.find((head)=>head.name==="References")
+    const fromHeader  = lastMessageNotFromMe.find((head)=>head.name==="From")
+    const subjectHeader = lastMessageNotFromMe.find((head)=>head.value==="Subject")
+
+      const originalSubject = subjectHeader?.value || "No Subject";
+      const subject = originalSubject.startsWith("Re:") ? originalSubject : `Re: ${originalSubject}`;
+
+
+
+
+
+    const res = await axios.post("http://localhost:3000/api/v1/google/email/reply",{
+      body:body,
+      messageId: messageIdHeader?.value || "",
+      references: referencesHeader?.value || messageIdHeader?.value || "",
+      to: fromHeader?.value || "",
+      subject
+    },{
+      withCredentials:true
+    })
+  }
 
 
   return (
@@ -136,38 +176,40 @@ const Dashboard2 = () => {
     <>
       {/* Thread scrollable area */}
       <div className="flex-1 overflow-y-auto pr-2 space-y-6 mt-4 pb-40">
-        {email.messages.map((msg) => {
-          const fromHeader = msg.impheaders.find((h) => h.name === "From")?.value || "Unknown Sender";
-          const subject = msg.impheaders.find((h)=>h.name==="Subject")?.value || "No subject"
-          const timestamp = new Date().toLocaleString();
+       {email.messages.map((msg, index) => {
+  const fromHeader = msg.impheaders.find((h) => h.name === "From")?.value || "Unknown Sender";
+  const subject = msg.impheaders.find((h) => h.name === "Subject")?.value || "No subject";
+  const timestamp = new Date( Date.now()).toLocaleString();
 
-          return (
-            <div
-              key={msg.id}
-              className="flex items-start space-x-4 bg-[#1e1e1e] p-6 rounded-lg border border-[#2d2d2d] shadow hover:shadow-lg transition-all"
-            >
-              <div className="flex-shrink-0 w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold">
-                {fromHeader.charAt(0).toUpperCase()}
-              </div>
+  return (
+    <div
+      key={msg.id}
+      className="flex flex-col gap-2 border-b border-[#2d2d2d] pb-6 pt-4"
+    >
+      {/* Header */}
+      <div className="flex items-start justify-between">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+            {fromHeader.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <p className="text-sm font-semibold text-white">{fromHeader}</p>
+            <p className="text-xs text-gray-400">{subject}</p>
+          </div>
+        </div>
+        <span className="text-xs text-gray-500">{timestamp}</span>
+      </div>
 
-              <div className="flex flex-col flex-1">
-                <div className="flex justify-between items-center mb-1">
-                  <p className="text-sm font-semibold text-orange-300">
-                    {fromHeader}
-                  </p>
-                  <p className="text-sm font-semibold text-orange-300">
-                    {subject}
-                  </p>
-                  <span className="text-xs text-gray-500">{timestamp}</span>
-                </div>
+      {/* Message content */}
+      <div className="ml-14 pr-2">
+        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">
+          {msg.snippet}
+        </p>
+      </div>
+    </div>
+  );
+})}
 
-                <p className="text-sm text-gray-300 leading-relaxed">
-                  {msg.snippet}
-                </p>
-              </div>
-            </div>
-          );
-        })}
         {/* Spacer to prevent overlap */}
         <div className="h-44" />
       </div>
@@ -186,12 +228,14 @@ const Dashboard2 = () => {
         <div className="flex justify-between items-center">
           {/* Left Action Buttons */}
           <div className="flex items-center space-x-3">
-            <button className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-5 py-2 rounded-md transition-colors">
+            <button 
+            onClick={()=>handleSendReply(email)}
+            className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-5 py-2 rounded-md transition-colors">
               Send
             </button>
-            <button className="text-gray-400 hover:text-gray-200 text-sm transition">
+            {/* <button className="text-gray-400 hover:text-gray-200 text-sm transition">
               Attach
-            </button>
+            </button> */}
           </div>
 
           {/* Right Action Buttons and Shortcut */}

@@ -1,6 +1,6 @@
-import { formatDate } from "../../../frontend/src/utils/dateFormat";
 import { gmail_v1, google } from "googleapis";
 import config from "../config/index";
+import type { replyType } from "../routes/google.route";
 export class GoogleOAuthManager {
   static SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
@@ -130,14 +130,7 @@ export class GoogleOAuthManager {
         format,
       });
 
-      console.log((JSON.stringify(data)))
-      // const impheaders = data.messages![0]?.payload?.headers?.filter(
-      //   (head) =>
-      //     head.name === "From" ||
-      //     head.name === "Subject" ||
-      //     head.name === "Date" ||
-      //     head.name === "To"
-      // );
+      // console.log((JSON.stringify(data)))
 
 
       data.messages = data.messages!.map((message) => {
@@ -146,7 +139,9 @@ export class GoogleOAuthManager {
           head.name === "From" ||
           head.name === "Subject" ||
           head.name === "Date" ||
-          head.name === "To"
+          head.name === "To" || 
+          head.name === 'References' ||
+          head.name === 'Message-ID'
       );
         delete message.payload;
         return {
@@ -193,7 +188,10 @@ export class GoogleOAuthManager {
     }
   }
 
-  async replyToThread(data:any){
+
+  // you just have to send the references from the last email exchaned in the thread 
+  // and the messageId of the last email , both of from headers and PS ; messageid is not the same one you are thinking of 
+  async replyToThread(data:replyType){
     try {
       await this.gmail?.users.messages.send({userId:'me',
         requestBody:{
@@ -209,11 +207,11 @@ export class GoogleOAuthManager {
               },
               {
                 name:'References',
-                value:data.threadId
+                value:data.references
               },
               {
                 name:'In-Reply-To',
-                value:data.lastMessageId
+                value:data.messageId
               },
               {
                 name:'Subject',

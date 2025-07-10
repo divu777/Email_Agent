@@ -8,7 +8,6 @@ import {
   ChevronRight,
   UserCircle,
 } from "lucide-react";
-import { SignOutButton } from "@clerk/clerk-react";
 import { useDispatch } from "react-redux";
 import { logout } from "../store/slices/authSlice";
 import { clearEmailThreads } from "../store/slices/emailSlice";
@@ -92,7 +91,7 @@ const Sidebar = ({
         {/* Bottom Section */}
         <div className="absolute bottom-0 w-full px-3 py-4 border-t border-[#222] space-y-2">
           {/* Logout */}
-          <SignOutButton>
+          {/* <SignOutButton>
             <button
               onClick={handleLogOut}
               className={`w-full flex items-center px-3 py-3 text-red-500 rounded-lg transition-colors duration-200 hover:bg-[#1e1e1e] ${
@@ -108,7 +107,7 @@ const Sidebar = ({
                 Logout
               </span>
             </button>
-          </SignOutButton>
+          </SignOutButton> */}
 
           {/* Collapse Toggle */}
           <button
@@ -144,12 +143,12 @@ const Sidebar = ({
               <span className="text-xs mt-1">{label}</span>
             </button>
           ))}
-          <SignOutButton redirectUrl="/">
+          {/* <SignOutButton redirectUrl="/">
             <button className="flex flex-col items-center justify-center flex-1 py-1 text-red-500">
               <LogOut className="w-6 h-6" />
               <span className="text-xs mt-1">Logout</span>
             </button>
-          </SignOutButton>
+          </SignOutButton> */}
         </nav>
       </div>
     </>
