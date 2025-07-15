@@ -3,6 +3,7 @@ import Sidebar from "./components/SideBar";
 import axios from "axios";
 import {  Star } from "lucide-react";
 import { getCookie } from "./utils/dateFormat";
+import { IoReturnUpBack } from "react-icons/io5";
 
 export type EmailsType = {
   id: string;
@@ -37,6 +38,7 @@ const Dashboard2 = () => {
   const [email, setEmail] = useState<EmailType2 | null>(null);
   const [emails, setEmails] = useState<EmailsType[] | null>([]);
   const [response, setResponse] = useState<string>("");
+  const [replyTarget, setReplyTarget] = useState<EmailSummary | null>(null);
   useEffect(() => {
     const fetchEmailHeaders = async () => {
       const response = await axios.get(
@@ -63,6 +65,11 @@ const Dashboard2 = () => {
     setResponse("")
    console.log(JSON.stringify(response.data.data))
   };
+  const getHeader = (headers: { name: string; value: string }[], name: string) => {
+  
+  return headers.find(h => h.name.toLowerCase() === name.toLowerCase())?.value || "";
+};
+
 
 
   const handleGenerateReply = async (emailselected: EmailType2) => {
@@ -198,6 +205,12 @@ const Dashboard2 = () => {
           </div>
         </div>
         <span className="text-xs text-gray-500">{timestamp}</span>
+        <IoReturnUpBack 
+  className="cursor-pointer"
+  onClick={() => setReplyTarget(msg)} 
+/>
+
+
       </div>
 
       {/* Message content */}
@@ -215,41 +228,53 @@ const Dashboard2 = () => {
       </div>
 
       {/* Reply Box - Stays Fixed at Bottom */}
-      <div className="absolute bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-[#2d2d2d] pt-4 px-4 pb-6">
-      <h3 className="text-sm text-gray-400 mb-2">Reply</h3>
+     {replyTarget 
+   && (() => {
+  const originalSubject = getHeader(replyTarget.impheaders, "Subject");
+  const replySubject = originalSubject.startsWith("Re:") ? originalSubject : `Re: ${originalSubject}`;
+
+  return (
+    <div className="absolute bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-[#2d2d2d] pt-4 px-4 pb-6">
+      <h3 className="text-sm text-gray-400 mb-2">
+        Replying to: <span className="text-white">{getHeader(replyTarget.impheaders, "From")}</span>
+      </h3>
       <div className="flex flex-col space-y-3 bg-[#1a1a1a] p-4 rounded-lg shadow-md">
+        <input
+          type="text"
+          value={replySubject}
+          disabled
+          className="bg-[#121212] text-white border border-[#333] rounded-md px-4 py-2"
+        />
         <textarea
           rows={4}
-           value={response} 
-           onChange={(e) => setResponse(e.target.value)}
+          value={response}
+          onChange={(e) => setResponse(e.target.value)}
           placeholder="Write your reply..."
           className="w-full bg-[#121212] text-white border border-[#333] rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500 resize-none"
         />
         <div className="flex justify-between items-center">
-          {/* Left Action Buttons */}
           <div className="flex items-center space-x-3">
-            <button 
-            onClick={()=>handleSendReply(email)}
-            className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-5 py-2 rounded-md transition-colors">
+            <button
+              onClick={() => handleSendReply({ ...email!, messages: [replyTarget] })}
+              className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-5 py-2 rounded-md transition-colors"
+            >
               Send
             </button>
-            {/* <button className="text-gray-400 hover:text-gray-200 text-sm transition">
-              Attach
-            </button> */}
           </div>
-
-          {/* Right Action Buttons and Shortcut */}
           <div className="flex items-center space-x-4">
-            <button className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-md transition-colors"
-            onClick={()=>handleGenerateReply(email)}>
+            <button
+              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-md transition-colors"
+              onClick={() => handleGenerateReply({ ...email!, messages: [replyTarget] })}
+            >
               <Star size={16} />
               Generate
             </button>
-
           </div>
         </div>
       </div>
     </div>
+  );
+})()}
     </>
   ) : (
     <div className="text-gray-500 flex items-center justify-center w-full h-full text-lg">

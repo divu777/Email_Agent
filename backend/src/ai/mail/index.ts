@@ -51,13 +51,12 @@ export const generateReply = async(context:contextType)=>{
 
   Generate a reply email now, following all instructions above. 
 
-  **IMPORTANT: Return your response in JSON format with this exact structure:**
-  {
-    "body": "your email reply content here"
-  }
-  Do not return thoughts or explanations. Only return a final JSON object with the reply.
-
-  Only return the JSON object, no additional text or explanations.
+  **CRITICAL: You must return ONLY a valid JSON object. Do not include any markdown formatting, backticks, code blocks, or explanations.**
+  
+  Return exactly this format:
+  {"body": "your email reply content here"}
+  
+  No additional text, no markdown, no backticks, just the JSON object.
   `;
 
   try {
