@@ -193,36 +193,36 @@ export class GoogleOAuthManager {
   // and the messageId of the last email , both of from headers and PS ; messageid is not the same one you are thinking of 
   async replyToThread(data:replyType){
     try {
-      await this.gmail?.users.messages.send({userId:'me',
-        requestBody:{
-          internalDate:Date.now().toString(),
-          payload:{
-            body:{
-              data:Buffer.from(data.body).toString('base64')
-            },
-            headers:[
-              {
-                name:'To',
-                value:data.to
-              },
-              {
-                name:'References',
-                value:data.references
-              },
-              {
-                name:'In-Reply-To',
-                value:data.messageId
-              },
-              {
-                name:'Subject',
-                value:data.subject
-              }
-            ]
-          }
-        }
-      })
+      const emailLines = [
+      `To: ${data.to}`,
+      `Subject: ${data.subject.startsWith("Re:") ? data.subject : "Re: " + data.subject}`,
+      `In-Reply-To: ${data.messageId}`,
+      `References: ${data.references}`,
+      'Content-Type: text/plain; charset="UTF-8"',
+      'Content-Transfer-Encoding: 7bit',
+      '', 
+      data.body,
+    ];
+
+    const email = emailLines.join("\r\n");
+
+    const raw = Buffer.from(email)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+    await this.gmail?.users.messages.send({
+      userId: "me",
+      requestBody: {
+        raw: raw,
+        threadId:data.threadId
+      },
+    });
+
+    console.log("sent");
     } catch (error) {
-      console.log("error in replying within the thread")
+      console.log("error in replying within the thread"+error)
     }
   }
 }

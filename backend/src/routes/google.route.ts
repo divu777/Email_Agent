@@ -191,16 +191,18 @@ const ReplyThreadSchema = z.object({
   body:z.string(),
   subject:z.string(),
   references:z.string(),
-  to : z.email(),
-  messageId:z.string()
-
+  to : z.string(),
+  messageId:z.string(),
+  threadId:z.string()
 })
 
 export type replyType = z.infer<typeof ReplyThreadSchema>
 
 // sending reply to a thread
 router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
+  console.log("----")
   const email = req.email
+  console.log(email)
   try {
 
     if(!email){
@@ -210,6 +212,7 @@ router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
 
     //console.log(JSON.stringify(req.body))
     const validSchema = ReplyThreadSchema.safeParse(req.body);
+
 
     if(!validSchema.success){
       res.json({
@@ -225,9 +228,8 @@ router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
 
     const gmail = new GoogleOAuthManager(tokens)
 
-    console.log(JSON.stringify(validSchema.data)+"]]]]]]")
 
-    //gmail.replyToThread(validSchema.data)
+    await gmail.replyToThread(validSchema.data)
     
   } catch (error) {
     console.log("Error in sending reply")
