@@ -22,7 +22,7 @@ const Navbar = () => {
           <div className="flex items-center gap-2">
             <Link to="/" className="flex items-center gap-2 text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors">
               <Zap className="h-6 w-6 text-blue-600" />
-              <span>Email Agent</span>
+              <span>Vektor</span>
             </Link>
           </div>
 

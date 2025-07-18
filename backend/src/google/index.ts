@@ -1,6 +1,7 @@
 import { gmail_v1, google } from "googleapis";
 import config from "../config/index";
 import type { replyType } from "../routes/google.route";
+import z from "zod/v4";
 export class GoogleOAuthManager {
   static SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
@@ -160,29 +161,36 @@ export class GoogleOAuthManager {
     }
   }
 
-  async sendEmail(gmail: gmail_v1.Gmail, data: any) {
+  async sendEmail(data: SendMessageType) {
     try {
-      const sendMessage = await gmail.users.messages.send({
+      if(!this.gmail){
+        return
+      }
+
+      const emailLines = [ 
+       `To: ${data.to}`,
+       `Subject: ${data.subject}`,
+        ``,
+        data.body
+      ]
+
+      const email  = emailLines.join("\r\n")
+
+      const raw = Buffer.from(email)
+      .toString("base64")
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+
+
+      const sendMessage = await this.gmail.users.messages.send({
         userId: "me",
-        requestBody: {
-          internalDate: Date.now().toString(),
-          payload: {
-            body: {
-              data: Buffer.from(data.body).toString("base64"),
-            },
-            headers: [
-              {
-                name: "To",
-                value: data.to,
-              },
-              {
-                name: "Subject",
-                value: "Just Checking In",
-              },
-            ],
-          },
-        },
+        requestBody:{
+          raw:raw
+        }
       });
+
+      console.log("senddd");
     } catch (error) {
       console.log("Erorr in sending the email");
     }
@@ -227,7 +235,11 @@ export class GoogleOAuthManager {
   }
 }
 
-// message['References'] = message_id
-// message['In-Reply-To'] = message_id
 
+const SendMessageSchema = z.object({
+  to:z.string(),
+  body:z.string(),
+  subject:z.string()
+})
 
+type SendMessageType = z.infer<typeof SendMessageSchema>

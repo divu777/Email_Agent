@@ -13,6 +13,7 @@ import { logout } from "../store/slices/authSlice";
 import { clearEmailThreads } from "../store/slices/emailSlice";
 import { disconnectMail } from "../store/slices/oauthSlice";
 import { useNavigate } from "react-router-dom";
+import { IoCreateOutline } from "react-icons/io5";
 
 interface SidebarProps {
   setActiveView: (view: string) => void;
@@ -27,21 +28,10 @@ const Sidebar = ({
   isCollapsed,
   setIsCollapsed,
 }: SidebarProps) => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-
-  const handleLogOut = () => {
-    dispatch(logout());
-    dispatch(disconnectMail());
-    dispatch(clearEmailThreads());
-    navigate("/");
-  };
 
   const menuItems = [
     { id: "mail", icon: Mail, label: "Mail" },
-    { id: "prompt", icon: Settings, label: "Prompts" },
-    { id: "analytics", icon: BarChart2, label: "Analytics" },
-    { id: "profile", icon: UserCircle, label: "Profile" },
+    { id: "send-mail", icon: IoCreateOutline, label: "Send Email" },
   ];
 
   return (
@@ -59,21 +49,23 @@ const Sidebar = ({
               isCollapsed ? "opacity-0 hidden" : "opacity-100"
             }`}
           >
-            Email Agent
+            Vektor
           </span>
         </div>
 
         {/* Menu Items */}
-        <nav className="mt-6 px-3">
+        <nav className="mt-6 px-3 ">
           {menuItems.map(({ id, icon: Icon, label }) => (
             <button
               key={id}
               onClick={() => setActiveView(id)}
-              className={`w-full flex items-center px-3 py-3 mb-2 rounded-lg transition-all duration-200
+              className={`w-full flex items-center  py-3 mb-2 rounded-lg transition-all duration-200 
                 ${
                   activeView === id
                     ? "bg-[#1a1a1a] text-orange-500 border border-orange-500"
                     : "text-gray-400 hover:bg-[#1e1e1e]"
+                } ${
+                  isCollapsed? "justify-center": "px-3"
                 }`}
             >
               <Icon className="w-5 h-5" />
@@ -91,9 +83,8 @@ const Sidebar = ({
         {/* Bottom Section */}
         <div className="absolute bottom-0 w-full px-3 py-4 border-t border-[#222] space-y-2">
           {/* Logout */}
-          {/* <SignOutButton>
+          
             <button
-              onClick={handleLogOut}
               className={`w-full flex items-center px-3 py-3 text-red-500 rounded-lg transition-colors duration-200 hover:bg-[#1e1e1e] ${
                 isCollapsed ? "justify-center" : ""
               }`}
@@ -107,7 +98,7 @@ const Sidebar = ({
                 Logout
               </span>
             </button>
-          </SignOutButton> */}
+         
 
           {/* Collapse Toggle */}
           <button
@@ -143,12 +134,10 @@ const Sidebar = ({
               <span className="text-xs mt-1">{label}</span>
             </button>
           ))}
-          {/* <SignOutButton redirectUrl="/">
             <button className="flex flex-col items-center justify-center flex-1 py-1 text-red-500">
               <LogOut className="w-6 h-6" />
               <span className="text-xs mt-1">Logout</span>
             </button>
-          </SignOutButton> */}
         </nav>
       </div>
     </>

@@ -24,7 +24,7 @@ function Dashboard() {
     switch (activeView) {
       case "mail":
         return <MailView />;
-      case "prompt":
+      case "Send Email":
         return <PromptView />;
       case "analytics":
         return <Insights />;

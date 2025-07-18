@@ -6,7 +6,7 @@ import config from "../config";
 import { authTokenMiddleware } from "../middleware";
 import {prisma} from "../../prisma/index"
 import { GlobalUser } from "../ai/mail";
-import z from "zod/v4";
+import z, { success } from "zod/v4";
 const router = express.Router();
 
 router.get("/callback", async (req, res) => {
@@ -233,6 +233,57 @@ router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
     
   } catch (error) {
     console.log("Error in sending reply")
+  }
+})
+
+export const NewEmailSchema = z.object({
+  to:z.string(),
+  subject:z.string(),
+  body:z.string()
+})
+
+
+router.post("/email/new",authTokenMiddleware,async(req,res)=>{
+  try {
+
+    
+    const email = req.email
+    
+    if(!email){
+      return
+    }
+    const validSchema  = NewEmailSchema.safeParse(req.body)
+
+    if(!validSchema.success){
+      console.log("wrong format");
+      res.json({
+        message:"Wrong format",
+        success:false
+      })
+      return
+    }
+
+
+    const tokens = GlobalUser[email]
+
+    const gmailClnt = new GoogleOAuthManager(tokens);
+
+    const response = await gmailClnt.sendEmail(validSchema.data)
+
+    res.json({
+      message:"Send email",
+      success:true
+    })
+
+    return
+
+    
+  } catch (error) {
+    console.log("Error in sending new email "+error);
+    res.json({
+      message:"Error in sending new email",
+      success:false
+    })
   }
 })
 
