@@ -1,41 +1,17 @@
 import { Link } from "react-router-dom";
-import {
-  SignInButton,
-  SignOutButton,
-  useUser,
-  UserButton,
-} from "@clerk/clerk-react";
+
 import { motion } from "framer-motion";
-import { useDispatch } from "react-redux";
-import { login, logout } from "../store/slices/authSlice";
-import { disconnectMail } from "../store/slices/oauthSlice";
-import { clearEmailThreads } from "../store/slices/emailSlice";
-import { useEffect, useState } from "react";
+
+import {  useEffect, useState } from "react";
 import { Zap } from "lucide-react";
 import { Menu, X } from 'lucide-react';
 
 const Navbar = () => {
-  const { isSignedIn, user } = useUser();
-  const dispatch = useDispatch();
+    const [loggedIn, setLoggedIn]= useState(false)
 
-  const handleLogOut = () => {
-    dispatch(logout());
-    dispatch(disconnectMail());
-    dispatch(clearEmailThreads());
-  };
+    
 
-  useEffect(() => {
-    if (user) {
-      dispatch(
-        login({
-          userId: user.id,
-          firstName: user.firstName,
-          lastName: user.lastName,
-          email: user.primaryEmailAddress?.emailAddress,
-        })
-      );
-    }
-  }, [user]);
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -58,7 +34,7 @@ const Navbar = () => {
             >
               About Us
             </Link>
-            {isSignedIn && (
+            {loggedIn && (
               <Link 
                 to="/dashboard"
                 className="px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-blue-50 hover:text-blue-600 transition duration-150"
@@ -66,22 +42,18 @@ const Navbar = () => {
                 Dashboard
               </Link>
             )}
-            {isSignedIn ? (
+            {loggedIn ? (
               <div className="flex items-center gap-4">
-                <UserButton />
-                <SignOutButton redirectUrl="/">
                   <motion.button
-                    onClick={handleLogOut}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="text-sm px-4 py-1.5 rounded-full border border-red-500 text-red-600 hover:bg-red-50 transition-all duration-300"
                   >
                     Log Out
                   </motion.button>
-                </SignOutButton>
               </div>
             ) : (
-              <SignInButton signUpForceRedirectUrl="/prompt-select">
+                <Link to="/login">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -92,7 +64,8 @@ const Navbar = () => {
                     →
                   </span>
                 </motion.button>
-              </SignInButton>
+                </Link>
+
             )}
           </nav>
 
@@ -124,7 +97,7 @@ const Navbar = () => {
             >
               About Us
             </Link>
-            {isSignedIn && (
+            {true && (
               <Link
                 to="/dashboard"
                 className="block px-3 py-2 rounded-md text-base font-medium text-gray-700 hover:text-blue-600 hover:bg-blue-50"
@@ -133,23 +106,22 @@ const Navbar = () => {
                 Dashboard
               </Link>
             )}
-            {isSignedIn ? (
+            {loggedIn ? (
               <div className="flex flex-col space-y-2 px-3 py-2">
-                <UserButton />
+                {/* <UserButton />
                 <SignOutButton redirectUrl="/">
                   <motion.button
-                    onClick={handleLogOut}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     className="text-sm px-4 py-1.5 rounded-full border border-red-500 text-red-600 hover:bg-red-50 transition-all duration-300"
                   >
                     Log Out
                   </motion.button>
-                </SignOutButton>
+                </SignOutButton> */}
               </div>
             ) : (
               <div className="px-3 py-2">
-                <SignInButton signUpForceRedirectUrl="/">
+                {/* <SignInButton signUpForceRedirectUrl="/">
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
@@ -160,7 +132,7 @@ const Navbar = () => {
                       →
                     </span>
                   </motion.button>
-                </SignInButton>
+                </SignInButton> */}
               </div>
             )}
           </div>

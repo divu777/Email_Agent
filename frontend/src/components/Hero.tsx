@@ -1,22 +1,20 @@
 import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
-import { useUser } from '@clerk/clerk-react'
 
 const Hero = () => {
-  const { isSignedIn } = useUser()
   const navigate = useNavigate()
 
-  const handleGetStarted = () => {
-    try {
-      if (isSignedIn) {
-        navigate('/connect-gmail')
-      } else {
-        navigate('/sign-up') // Redirect properly
-      }
-    } catch (err) {
-      console.log(err)
-    }
-  }
+  // const handleGetStarted = () => {
+  //   try {
+  //     if (isSignedIn) {
+  //       navigate('/connect-gmail')
+  //     } else {
+  //       navigate('/sign-up') // Redirect properly
+  //     }
+  //   } catch (err) {
+  //     console.log(err)
+  //   }
+  // }
 
   return (
     <div className="h-auto bg-white flex flex-col justify-center px-6 md:px-12 md:my-32">
@@ -35,7 +33,7 @@ const Hero = () => {
         </h3>
         <div className="mt-8">
           <button
-            onClick={handleGetStarted}
+            
             className="bg-black text-white px-8 py-3 rounded-xl font-semibold text-lg hover:bg-gray-900 transition duration-300 shadow-md hover:shadow-lg"
           >
             Start Free — No Setup Needed

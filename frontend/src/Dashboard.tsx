@@ -10,9 +10,11 @@ import { useNavigate } from "react-router-dom";
 import Insights from "./Insights";
 import { RootState } from "./store/store";
 import ProfileView from "./components/ProfileView";
+import { clearEmailThreads } from "./store/slices/emailSlice";
 
 function Dashboard() {
   const { userId } = useSelector((state: RootState) => state.authreducer);
+  // const {connected ,onboarding_complete} = useSelector((state:RootState)=>state.OAuthreducer);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const [activeView, setActiveView] = useState("mail");
@@ -22,7 +24,7 @@ function Dashboard() {
     switch (activeView) {
       case "mail":
         return <MailView />;
-      case "prompt":
+      case "Send Email":
         return <PromptView />;
       case "analytics":
         return <Insights />;
@@ -33,14 +35,24 @@ function Dashboard() {
     }
   };
 
-  useEffect(() => {
-    if (!userId) {
-      console.log("user nahi mila");
-      dispatch(disconnectMail());
-      dispatch(logout());
-      navigate("/");
-    }
-  }, [userId]);
+  // useEffect(() => {
+  //   if (!userId) {
+  //     console.log("user nahi mila");
+  //     dispatch(disconnectMail());
+  //     dispatch(logout());
+  //     dispatch(clearEmailThreads())
+  //     navigate("/");
+  //   }else{
+  //     if(connected && !onboarding_complete){
+  //       navigate("/prompt-select");
+  //     } else if(!connected && !onboarding_complete) {
+  //       navigate("/connect-gmail")
+  //     }else{
+  //       console.log("app toh ache insaan ho")
+  //     }
+  //   }
+    
+  // }, [userId,onboarding_complete,connected]);
 
   return (
     <div className="flex flex-col lg:flex-row bg-gray-50 min-h-screen">

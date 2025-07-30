@@ -1,43 +1,30 @@
 
 import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { ConnectGmail } from "./ConnectGmail";
-import Dashboard from "./Dashboard";
 import Landing from "./Landing";
-import PromptSelect from "./PromptSelect";
 import AboutMe from "./components/About";
+import Login from "./components/Login";
+import Dashboard2 from "./components/Dashboard2";
 
 export default function App() {
   return (
     <BrowserRouter>
-    <Routes>
-      <Route path='/' element={<Landing/>} />
-      <Route path='/connect-gmail' element={<ConnectGmail />} />
+      <Routes>
+        <Route path="/" element={<Landing />} />
 
-      <Route path='/dashboard' element={<Dashboard />} />
-      <Route path="/about-me" element={<AboutMe/>}/>
-      <Route
-        path="/prompt-select"
-        element={
-          // <ProtectedRoute requireGmailConnected={true}>
-            <PromptSelect />
-          // </ProtectedRoute>
-        }
-      />
-    </Routes>
+        <Route
+          path="/dashboard"
+          element={
+            <>
+              <Dashboard2 />
+            </>
+          }
+        />
+        <Route path="/about-me/*" element={<AboutMe />} />
+        <Route 
+        path="/login"
+        element={<Login/>}/>
+      </Routes>
     </BrowserRouter>
   );
 }
 
-
-/*
-
-todo list 
-
-1) buy domain to send first mail in resend 
-
-2) cloud pub sub works try to see if it works and able to process and use the email better
-
-3) fix something below the features and some landing page UI revamp that you do yourself 
-
-
-*/
