@@ -1,78 +1,110 @@
-import express from 'express'
+import express from "express";
 
-import { EmailTypeSchema } from '../types';
+import { EmailTypeSchema } from "../types";
 
-import { authTokenMiddleware } from '../middleware';
-import { generateReply } from '../ai/mail';
+import { authTokenMiddleware } from "../middleware";
+import { craftNewReply, generateReply } from "../ai/mail";
 
+const router = express.Router();
 
-
-
-
-const router=express.Router()
-
-
-router.post("/reply",authTokenMiddleware,async(req,res)=>{
+router.post("/reply", authTokenMiddleware, async (req, res) => {
   try {
-    const validSchema = EmailTypeSchema.safeParse(req.body.email)
+    const validSchema = EmailTypeSchema.safeParse(req.body.email);
 
-    if(!validSchema.success){
-        res.json({
-            message:"Not valid schema",
-            success:false
-        })
-        return
+    if (!validSchema.success) {
+      res.json({
+        message: "Not valid schema",
+        success: false,
+      });
+      return;
     }
-
 
     //
 
-    const {messages} = validSchema.data
+    const { messages } = validSchema.data;
 
     //console.log(JSON.stringify(messages)+"????????")
 
     // const reply = null
 
     const reply = await generateReply({
-      user:req.email!,
-      user_input:null,
-      emails:messages
-    })
+      user: req.email!,
+      user_input: null,
+      emails: messages,
+    });
 
-    if(!reply){
+    if (!reply) {
       res.json({
-        reply:"Please try again, after some time."
+        reply: "Please try again, after some time.",
+      });
+      return;
+    }
+
+    res.json({
+      reply,
+    });
+
+  } catch (error) {
+    console.log(" error in generating reply " + error);
+    res.json({
+      message: "Error in generating reply for this thread",
+      success: false,
+    });
+    return;
+  }
+});
+
+import z from 'zod/v4'
+
+const craftNewReplySchema = z.object({
+  subject:z.string().nullable(),
+  body:z.string().nullable()
+})
+
+
+router.post("/craft",authTokenMiddleware,async(req,res)=>{
+    const body = req.body
+
+    const validSchema = craftNewReplySchema.safeParse(body);
+
+    console.log(validSchema)
+
+    if(!validSchema.success){
+      console.log("not valid schema");
+      res.json({
+        message:"Not correct Inputs",
+        success:false
       })
       return
     }
 
+    const user = req.email
+    
+    if(!user){
+      console.log("user not available");
+      return
+    }
+
+    const response = await craftNewReply({user , payload:{subject:validSchema.data.subject || null ,body:validSchema.data.body || null}})
+
+    console.log(JSON.stringify(response)+"=========")
+
+    if(response.error){
+      res.json({
+        message:"Error in generating reply",
+        error:response.error,
+        success:false
+      })
+      return
+    }
 
     res.json({
-      reply
+      message:"Here is the new generated reply",
+      data:response,
+      success:true
     })
-
-    return 
-
-
-
-
-
-
-    
-
-
-
-    
-  } catch (error) {
-    console.log(" error in generating reply "+error);
-    res.json({
-      message:"Error in generating reply for this thread",
-      success:false,
-    })
-    return
-  }
 })
 
 
 
-export default router
+export default router;

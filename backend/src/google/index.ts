@@ -192,7 +192,7 @@ export class GoogleOAuthManager {
 
       console.log("senddd");
     } catch (error) {
-      console.log("Erorr in sending the email");
+      console.log("Erorr in sending the email"+error);
     }
   }
 

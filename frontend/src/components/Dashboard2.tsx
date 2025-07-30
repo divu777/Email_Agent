@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
-import Sidebar from "./components/SideBar";
+import Sidebar from "./SideBar";
 import axios from "axios";
 import { Star } from "lucide-react";
 import { IoReturnUpBack } from "react-icons/io5";
-import ReplyBox from "./components/ReplyBox";
-import MailView from "./components/MailView2";
-import EmptyState from "./components/EmptyState";
+import ReplyBox from "./ReplyBox";
+import MailView from "./MailView2";
+import EmptyState from "./EmptyState";
 
 export type EmailsType = {
   id: string;
@@ -15,8 +15,7 @@ export type EmailsType = {
   subject: string;
 };
 
-export type SendReply =
-  | {
+export type SendReply = {
       type: "thread-reply";
       payload: EmailSummary;
     }
@@ -56,11 +55,19 @@ const Dashboard2 = () => {
   const [replyTarget, setReplyTarget] = useState<EmailSummary | null>(null);
   const [replybox, setReplyBox] = useState(false);
 
-  const [mail, setMail] = useState({
-    to: "",
-    subject: "",
-    body: "",
-  });
+  type Mail = {
+  to: string;
+  subject: string;
+  body: string;
+};
+
+const [mail, setMail] = useState<Mail>({
+  to: "",
+  subject: "",
+  body: "",
+});
+
+
   useEffect(() => {
     const fetchEmailHeaders = async () => {
       const response = await axios.get(
@@ -159,6 +166,8 @@ const Dashboard2 = () => {
   const handleNewEmail = async (mail:{to:string,subject:string,body:string}) => {
 
     console.log("reachhh")
+    console.log(mail)
+    console.log(mail.to.split(", "))
 
     const response = await axios.post("http://localhost:3000/api/v1/google/email/new",{
       ...mail
@@ -170,6 +179,23 @@ const Dashboard2 = () => {
   console.log(JSON.stringify(response.data)+"{----------}")
 
   };
+
+  async function handleGenerateEmail(subject:string,body:string){
+    const response =  await axios.post("http://localhost:3000/api/v1/genai/craft",{
+      subject,
+      body
+    },{
+      withCredentials:true
+    });
+
+    console.log(JSON.stringify(response.data)+"==========")
+
+    setMail((prev)=>({ ...prev,
+  subject: response.data.data.subject ?? prev.subject,
+  body: response.data.data.body ?? prev.body,}))
+
+  
+  }
 
   return (
     <div className="bg-black min-h-screen">
@@ -244,6 +270,7 @@ const Dashboard2 = () => {
                   );
                 })}
 
+              
                 {/* Spacer to prevent overlap */}
                 <div className="h-44" />
               </div>
@@ -260,13 +287,20 @@ const Dashboard2 = () => {
                     : `Re: ${originalSubject}`;
 
                   return (
-                    <div className="absolute bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-[#2d2d2d] pt-4 px-4 pb-6">
-                      <h3 className="text-sm text-gray-400 mb-2">
+                    <div className="absolute bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-[#2d2d2d] pt-4 px-4 pb-6 ">
+                      <div className=" flex  w-full   items-center justify-between">
+                   
+                      <h3 className="text-sm text-gray-400 mb-2 ">
                         Replying to:{" "}
                         <span className="text-white">
                           {getHeader(replyTarget.impheaders, "From")}
                         </span>
                       </h3>
+                           <button onClick={()=> setReplyTarget(null)}>
+
+                        x
+                        </button>
+                      </div>
                       <div className="flex flex-col space-y-3 bg-[#1a1a1a] p-4 rounded-lg shadow-md">
                         <input
                           type="text"
@@ -320,6 +354,7 @@ const Dashboard2 = () => {
 
       {replybox && (
         <ReplyBox
+        handleGenerateEmail={handleGenerateEmail}
           mail={mail}
           setMail={setMail}
           setActiveView={setActiveView}

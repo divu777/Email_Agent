@@ -1,4 +1,4 @@
-import { EmailsType } from "../Dashboard2"
+import { EmailsType } from "./Dashboard2"
 
 const MailView = ({emails,handleEmailClick}:{emails:EmailsType[],handleEmailClick:(threadId:string)=>void}) => {
 
