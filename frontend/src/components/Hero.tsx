@@ -2,7 +2,6 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 
 const Hero = () => {
-  const navigate = useNavigate()
 
   // const handleGetStarted = () => {
   //   try {

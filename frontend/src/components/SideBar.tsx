@@ -1,18 +1,12 @@
 import {
   Mail,
-  Settings,
-  BarChart2,
+
   LogOut,
   Zap,
   ChevronLeft,
   ChevronRight,
-  UserCircle,
 } from "lucide-react";
-import { useDispatch } from "react-redux";
-import { logout } from "../store/slices/authSlice";
-import { clearEmailThreads } from "../store/slices/emailSlice";
-import { disconnectMail } from "../store/slices/oauthSlice";
-import { useNavigate } from "react-router-dom";
+
 import { IoCreateOutline } from "react-icons/io5";
 
 interface SidebarProps {

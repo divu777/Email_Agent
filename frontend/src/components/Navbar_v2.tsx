@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 
 import { motion } from "framer-motion";
 
-import {  useEffect, useState } from "react";
+import {   useState } from "react";
 import { Zap } from "lucide-react";
 import { Menu, X } from 'lucide-react';
 
 const Navbar = () => {
-    const [loggedIn, setLoggedIn]= useState(false)
+    const [loggedIn]= useState(false)
 
     
 

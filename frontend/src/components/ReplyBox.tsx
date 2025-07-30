@@ -1,5 +1,5 @@
 import { Star } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
+import  {  useRef, useState } from "react";
 
 const ReplyBox = ({
   setReplyBox,
