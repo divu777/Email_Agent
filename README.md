@@ -1,4 +1,4 @@
-# 📧 AI Email Agent
+# 📧 AI Vektor
 
 An AI-powered Gmail agent that reads and replies to emails intelligently using OpenAI, with privacy-first architecture, seamless authentication, and real-time email detection—without relying on Google Cloud Pub/Sub.
 

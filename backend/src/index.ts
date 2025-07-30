@@ -1,81 +1,53 @@
-import e from "express";
-import cors from "cors";
-import { gmailobj } from "./gmail";
-import mailRoutes from "./routes/gmailRoute";
-import process from "process";
-import { createServer } from "http";
-import { IOinit } from "./socket";
-import config from "./config";
-import analyticRoute from "./routes/analyticRoute"
-import promptRoute from "./routes/promptRoute"
+import express from 'express';
+import cors from 'cors';
+import config from './config';
+import googleRouter from "./routes/google.route"
+import genAiRouter from "./routes/genAi.routes"
+import 'express-session'
+import cookieParser from 'cookie-parser';
+import session from 'express-session';
+const app=express();
 
+app.use(cookieParser())
 
-const app = e();
-
-
-const server =createServer(app);
-
-IOinit(server);
-
-app.use(cors());
-app.use(e.json());
-
-app.use("/api/v1/analytics",analyticRoute)
-app.use("/api/v1/prompt", promptRoute)
-app.use("/api/v1/mail", mailRoutes);
-
-app.get("/", (req, res) => {
-  res.send("hello email agent boiss :)");
-});
-
-app.post("/callback", async (req, res) => {
-  try {
-    const { state, code } = req.body;
-
-    if (!state || !code) {
-      return res.status(400).json({
-        message: "State and code are required",
-        success: false,
-      });
-    }
-
-    if (state !== gmailobj.state) {
-      return res.status(403).json({
-        message: "State mismatch — possible CSRF attack",
-        success: false,
-      });
-    }
-
-    const decoded = JSON.parse(Buffer.from(state, "base64").toString());
-    const userId = decoded?.userId;
-
-    if (!userId) {
-      return res.status(400).json({
-        message: "Invalid state parameter",
-        success: false,
-      });
-    }
-
-    await gmailobj.setTokens({ state, code }, userId);
-
-    return res.status(200).json({
-      message: "OAuth entry made successfully for the user",
-      success: true,
-    });
-
-  } catch (err) {
-    console.error("OAuth callback error:", err);
-    return res.status(500).json({
-      message: "Internal Server Error",
-      success: false,
-    });
+app.use(session({
+  secret: 'supersecretpassword',
+  resave: false,
+  saveUninitialized: true,
+  cookie: {
+    secure: false, // true in HTTPS
+    sameSite: 'lax' // or 'none' if cross-origin and using HTTPS
   }
-});
+}));
+
+
+app.use(express.json());
+app.use(cors({
+    origin: 'http://localhost:5173',
+  credentials: true
+}));
 
 
 
-server.listen(config.PORT, () => {
-  console.log(`Server (HTTP + WebSocket) running on port ${config.PORT}`);
-});
+app.use("/api/v1/google",googleRouter)
+app.use("/api/v1/genai",genAiRouter)
 
+const PORT=config.PORT 
+
+
+
+
+
+
+
+app.get("/uptime",(req,res)=>{
+    res.json({
+        message:"Going great Uptime monitor",
+        success:true
+    })
+})
+
+app.listen(PORT,()=>{
+    console.log("App is running on PORT "+PORT)
+})
 

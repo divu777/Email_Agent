@@ -13,60 +13,13 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model User {
-  id            String        @id
-  email         String        @unique
-  auto_reply    Boolean       @default(true)
-  oauth         OAuth?
-  threads       EmailThread[]
-  emails        Email[]
-  lastHistoryId String
+
+model User{
+  id  String @id @default(uuid())
+  name String?  
+  email String @unique 
+  access_token String
+  refresh_token String
+  expiry_date DateTime
 }
 
-model OAuth {
-  userId              String      @id
-  access_token        String
-  refresh_token       String
-  expiry_date         DateTime
-  user                User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  auto_reply          Boolean     @default(true)
-  prompt              PromptEnums @default(Professional)
-  onboarding_complete Boolean @default(false)
-  first_email_send    Boolean @default(false)
-}
-
-model EmailThread {
-  id        Int      @id @default(autoincrement())
-  userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  threadId  String   @unique
-  subject   String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  emails    Email[]
-
-  @@index([userId])
-}
-
-model Email {
-  id           Int         @id @default(autoincrement())
-  userId       String
-  user         User        @relation(fields: [userId], references: [id], onDelete: Cascade)
-  threadId     String
-  thread       EmailThread @relation(fields: [threadId], references: [threadId], onDelete: Cascade)
-  sender       String
-  recipient    String
-  createdAt    DateTime    @default(now())
-  updatedAt    DateTime    @updatedAt
-  context      String
-  ai_generated Boolean     @default(false)
-  read         Boolean     @default(false)
-
-  @@index([userId])
-}
-
-enum PromptEnums {
-  Professional
-  Casual
-  Friendly
-}
