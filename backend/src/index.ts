@@ -23,7 +23,7 @@ app.use(session({
 
 app.use(express.json());
 app.use(cors({
-    origin: 'http://localhost:5173',
+    origin: config.FRONTEND_URL,
   credentials: true
 }));
 

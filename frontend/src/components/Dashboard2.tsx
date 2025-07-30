@@ -6,6 +6,7 @@ import { IoReturnUpBack } from "react-icons/io5";
 import ReplyBox from "./ReplyBox";
 import MailView from "./MailView2";
 import EmptyState from "./EmptyState";
+import { config } from "../config";
 
 export type EmailsType = {
   id: string;
@@ -71,12 +72,11 @@ const [mail, setMail] = useState<Mail>({
   useEffect(() => {
     const fetchEmailHeaders = async () => {
       const response = await axios.get(
-        "http://localhost:3000/api/v1/google/emails",
+        `${config.BACKEND_URL}/api/v1/google/emails`,
         {
           withCredentials: true,
         }
       );
-      //console.log(JSON.stringify(response.data.array))
       setEmails(response.data.array);
     };
 
@@ -91,13 +91,12 @@ const [mail, setMail] = useState<Mail>({
 
   const handleEmailClick = async (threadId: string) => {
     const response = await axios.get(
-      `http://localhost:3000/api/v1/google/emails/${threadId}`,
+      `${config.BACKEND_URL}/api/v1/google/emails/${threadId}`,
       { withCredentials: true }
     );
     setEmail(response.data.data);
     setselectedMail(true);
     setResponse("");
-    console.log(JSON.stringify(response.data.data));
   };
   const getHeader = (
     headers: { name: string; value: string }[],
@@ -110,9 +109,8 @@ const [mail, setMail] = useState<Mail>({
   };
 
   const handleGenerateReply = async (emailselected: EmailType2) => {
-    console.log("--------" + JSON.stringify(emailselected));
     const response = await axios.post(
-      `http://localhost:3000/api/v1/genai/reply`,
+      `${config.BACKEND_URL}/api/v1/genai/reply`,
       {
         email: emailselected,
       },
@@ -121,9 +119,6 @@ const [mail, setMail] = useState<Mail>({
       }
     );
 
-    console.log(
-      JSON.stringify(response.data) + "---->reply recieved for thread"
-    );
     setResponse(response.data.reply);
   };
 
@@ -148,7 +143,7 @@ const [mail, setMail] = useState<Mail>({
       : `Re: ${originalSubject}`;
 
     const res = await axios.post(
-      "http://localhost:3000/api/v1/google/email/reply",
+      `${config.BACKEND_URL}/api/v1/google/email/reply`,
       {
         body: body,
         messageId: messageIdHeader?.value || "",
@@ -165,30 +160,26 @@ const [mail, setMail] = useState<Mail>({
 
   const handleNewEmail = async (mail:{to:string,subject:string,body:string}) => {
 
-    console.log("reachhh")
-    console.log(mail)
-    console.log(mail.to.split(", "))
 
-    const response = await axios.post("http://localhost:3000/api/v1/google/email/new",{
+
+    const response = await axios.post(`${config.BACKEND_URL}/api/v1/google/email/new`,{
       ...mail
     },
   {
     withCredentials:true
   })
 
-  console.log(JSON.stringify(response.data)+"{----------}")
 
   };
 
   async function handleGenerateEmail(subject:string,body:string){
-    const response =  await axios.post("http://localhost:3000/api/v1/genai/craft",{
+    const response =  await axios.post(`${config.BACKEND_URL}/api/v1/genai/craft`,{
       subject,
       body
     },{
       withCredentials:true
     });
 
-    console.log(JSON.stringify(response.data)+"==========")
 
     setMail((prev)=>({ ...prev,
   subject: response.data.data.subject ?? prev.subject,

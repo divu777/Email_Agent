@@ -23,9 +23,6 @@ router.post("/reply", authTokenMiddleware, async (req, res) => {
 
     const { messages } = validSchema.data;
 
-    //console.log(JSON.stringify(messages)+"????????")
-
-    // const reply = null
 
     const reply = await generateReply({
       user: req.email!,
@@ -87,7 +84,6 @@ router.post("/craft",authTokenMiddleware,async(req,res)=>{
 
     const response = await craftNewReply({user , payload:{subject:validSchema.data.subject || null ,body:validSchema.data.body || null}})
 
-    console.log(JSON.stringify(response)+"=========")
 
     if(response.error){
       res.json({

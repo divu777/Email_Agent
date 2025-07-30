@@ -12,12 +12,12 @@ const router = express.Router();
 router.get("/callback", async (req, res) => {
   const { state, code } = req.query;
   if (state != req.session.state) {
-    res.redirect("http://localhost:5173/login");
+    res.redirect(config.REDIRECT_FRONTEND_URL);
     return;
   }
 
   if (!code) {
-    res.redirect("http://localhost:5173");
+    res.redirect(config.FRONTEND_URL);
     return;
   }
 
@@ -64,16 +64,15 @@ router.get("/callback", async (req, res) => {
     secure: !isLocalhost,
     sameSite: "lax",
   });
-  res.redirect("http://localhost:5173/dashboard");
+  res.redirect(config.DASHBOARD_URL);
   return;
 });
 
 router.get("/authorizationUrl", (req, res) => {
   try {
     const token =  req.cookies["email-agent"]
-    console.log(JSON.stringify(token) + "old userrrr ");
     if (token) {
-      res.send("http://localhost:5173/dashboard");
+      res.send(config.DASHBOARD_URL);
       return;
     }
     const randomId = randomUUIDv7();
@@ -200,17 +199,13 @@ export type replyType = z.infer<typeof ReplyThreadSchema>
 
 // sending reply to a thread
 router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
-  console.log("----")
   const email = req.email
-  console.log(email)
   try {
 
     if(!email){
-      console.log("here")
       return 
     }
 
-    //console.log(JSON.stringify(req.body))
     const validSchema = ReplyThreadSchema.safeParse(req.body);
 
 

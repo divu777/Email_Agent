@@ -131,8 +131,6 @@ export class GoogleOAuthManager {
         format,
       });
 
-      // console.log((JSON.stringify(data)))
-
 
       data.messages = data.messages!.map((message) => {
          const impheaders = message?.payload?.headers?.filter(

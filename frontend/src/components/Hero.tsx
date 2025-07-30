@@ -2,17 +2,6 @@ import { motion } from 'framer-motion'
 
 const Hero = () => {
 
-  // const handleGetStarted = () => {
-  //   try {
-  //     if (isSignedIn) {
-  //       navigate('/connect-gmail')
-  //     } else {
-  //       navigate('/sign-up') // Redirect properly
-  //     }
-  //   } catch (err) {
-  //     console.log(err)
-  //   }
-  // }
 
   return (
     <div className="h-auto bg-white flex flex-col justify-center px-6 md:px-12 md:my-32">

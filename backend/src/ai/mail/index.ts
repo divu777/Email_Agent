@@ -80,9 +80,14 @@ export const generateReply = async (context: contextType) => {
       ],
       temperature: 0.7,
     });
-    const data = JSON.parse(chatCompletion.choices[0]?.message.content ?? "");
 
-    //console.log(JSON.stringify(data))
+        let rawResponse = chatCompletion.choices[0]?.message.content ?? "";
+
+
+        rawResponse = rawResponse.trim().replace(/^```(?:json)?|```$/g, "");
+
+    const data = JSON.parse(rawResponse);
+
 
     if (!data) {
       console.log("error");
@@ -171,10 +176,7 @@ Do NOT wrap the response in triple backticks do NOT add markdown or comments. Re
 
     rawResponse = rawResponse.trim().replace(/^```(?:json)?|```$/g, "");
   
-    const data = JSON.parse(rawResponse);
-  
-    console.log(JSON.stringify(chatCompletion)+"----------new reply")
-  
+    const data = JSON.parse(rawResponse);  
     return data;
   } catch (error) {
     console.log("error in crafting new reply "+error)

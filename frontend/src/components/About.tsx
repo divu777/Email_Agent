@@ -1,22 +1,11 @@
 import { CheckCircle, MapPin, Edit2, Github, Linkedin, Twitter, Globe } from 'lucide-react';
-import Navbar from './Navbar';
-import { useEffect } from 'react';
-import { useLocation, } from 'react-router-dom';
+import Navbar from './Navbar_v2';
 
 
 
 function App() {
-    const url =  useLocation();
 
-useEffect(()=>{
-  if(url.search){
-    const token = url.search.split("=");
-    console.log(token[1] +" -------->")
 
-    document.cookie = `token=${token[1]}; path=/; max-age=${60 * 60 * 24}`;
-    window.location.href = "/";
-  }
-},[url])
   return (
     <div className="min-h-screen bg-gray-100">
         <Navbar />

@@ -3,6 +3,7 @@ import type { Request, Response, NextFunction } from "express";
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { prisma } from "../../prisma";
 import { GlobalUser } from "../ai/mail";
+import config from "../config";
 
 export const authTokenMiddleware = async (
   req: Request,
@@ -13,7 +14,7 @@ export const authTokenMiddleware = async (
     const token = req.cookies["email-agent"];
 
     if (!token) {
-      res.redirect("http://localhost:5173/login");
+      res.redirect(config.REDIRECT_FRONTEND_URL);
       return;
     }
 
@@ -43,7 +44,7 @@ export const authTokenMiddleware = async (
           sameSite:'lax',
           secure:req.hostname==='localhost'?false:true
         })
-        res.redirect("http://localhost:5173");
+        res.redirect(config.FRONTEND_URL);
         return;
       }
 

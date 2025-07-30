@@ -5,7 +5,7 @@ const Login = () => {
     const [authurl,SetAuthUrl]=useState(null);
     useEffect(()=>{
         const getAuthuRL=async()=>{
-            const response = await axios.get("http://localhost:3000/api/v1/google/authorizationUrl",{
+            const response = await axios.get(`${config.BACKEND_URL}/api/v1/google/authorizationUrl`,{
                 withCredentials:true
             })
             SetAuthUrl(response.data)
@@ -13,7 +13,6 @@ const Login = () => {
         getAuthuRL()
     },[])
 
-    console.log(authurl);
 
     if(!authurl){
         return( 
@@ -24,8 +23,6 @@ const Login = () => {
     }
 
     const handleClick = () => {
-          console.log("Button clicked");
-
   window.location.href = authurl;
 };
 
