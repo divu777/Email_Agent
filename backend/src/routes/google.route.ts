@@ -10,6 +10,7 @@ import z, { success } from "zod/v4";
 const router = express.Router();
 
 router.get("/callback", async (req, res) => {
+  console.log("--------")
   const { state, code } = req.query;
   if (state != req.session.state) {
     res.redirect(config.REDIRECT_FRONTEND_URL);
@@ -92,12 +93,17 @@ router.get("/authorizationUrl", (req, res) => {
 
 
 
-router.get("/emails", authTokenMiddleware, async(req, res) => {
+router.get("/emails/:pageToken", authTokenMiddleware, async(req, res) => {
   try {
     const token = GlobalUser[req.email!]
+
+    const pageToken = req.params.pageToken
+
+
     const client = new GoogleOAuthManager(token)
 
-    const response = await client.getEmailIdsMetaDataList()
+    const response = await client.getEmailIdsMetaDataList(pageToken)
+
 
     if(!response || !response.messages){
       return
@@ -126,7 +132,9 @@ router.get("/emails", authTokenMiddleware, async(req, res) => {
     res.json({
       message:"fetch data successfully",
       array:MessageArray,
-      success:true
+      success:true,
+      nextPageToken : response.nextPageToken
+
     })
     return
   } catch (error) {
@@ -141,7 +149,7 @@ router.get("/emails", authTokenMiddleware, async(req, res) => {
 
 
 
-router.get("/emails/:threadId",authTokenMiddleware,async(req,res)=>{
+router.get("/email/:threadId",authTokenMiddleware,async(req,res)=>{
   const {threadId} = req.params
 
   if(!threadId){

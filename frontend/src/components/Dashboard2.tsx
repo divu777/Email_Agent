@@ -16,7 +16,8 @@ export type EmailsType = {
   subject: string;
 };
 
-export type SendReply = {
+export type SendReply =
+  | {
       type: "thread-reply";
       payload: EmailSummary;
     }
@@ -51,16 +52,16 @@ const Dashboard2 = () => {
   const [activeView, setActiveView] = useState("mail");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [email, setEmail] = useState<EmailType2 | null>(null);
-  const [emails, setEmails] = useState<EmailsType[] | null>([]);
+  const [emails, setEmails] = useState<EmailsType[]>([]);
   const [response, setResponse] = useState<string>("");
   const [replyTarget, setReplyTarget] = useState<EmailSummary | null>(null);
   const [replybox, setReplyBox] = useState(false);
 
   type Mail = {
-  to: string;
-  subject: string;
-  body: string;
-};
+    to: string;
+    subject: string;
+    body: string;
+  };
 
 const [mail, setMail] = useState<Mail>({
   to: "",
@@ -68,19 +69,28 @@ const [mail, setMail] = useState<Mail>({
   body: "",
 });
 
+  const [load,setLoad] = useState("0")
 
-  useEffect(() => {
-    const fetchEmailHeaders = async () => {
+      const fetchEmailHeaders = async () => {
       const response = await axios.get(
-        `${config.BACKEND_URL}/api/v1/google/emails`,
+        `${config.BACKEND_URL}/api/v1/google/emails/${load}`,
         {
           withCredentials: true,
         }
       );
-      setEmails(response.data.array);
+
+      // console.log(JSON.stringify(response.data))
+      setEmails((prev)=>[...prev,...response.data.array]);
+      setLoad(response.data.nextPageToken)
     };
 
+    const [loading,setLoading] = useState(false)
+
+  useEffect(() => {
+
+
     fetchEmailHeaders();
+
   }, []);
 
   useEffect(() => {
@@ -91,7 +101,7 @@ const [mail, setMail] = useState<Mail>({
 
   const handleEmailClick = async (threadId: string) => {
     const response = await axios.get(
-      `${config.BACKEND_URL}/api/v1/google/emails/${threadId}`,
+      `${config.BACKEND_URL}/api/v1/google/email/${threadId}`,
       { withCredentials: true }
     );
     setEmail(response.data.data);
@@ -158,34 +168,48 @@ const [mail, setMail] = useState<Mail>({
     );
   };
 
-  const handleNewEmail = async (mail:{to:string,subject:string,body:string}) => {
-
-
-
-    const response = await axios.post(`${config.BACKEND_URL}/api/v1/google/email/new`,{
-      ...mail
-    },
-  {
-    withCredentials:true
-  })
-
-
+  const handleNewEmail = async (mail: {
+    to: string;
+    subject: string;
+    body: string;
+  }) => {
+    const response = await axios.post(
+      `${config.BACKEND_URL}/api/v1/google/email/new`,
+      {
+        ...mail,
+      },
+      {
+        withCredentials: true,
+      }
+    );
   };
 
-  async function handleGenerateEmail(subject:string,body:string){
-    const response =  await axios.post(`${config.BACKEND_URL}/api/v1/genai/craft`,{
-      subject,
-      body
-    },{
-      withCredentials:true
-    });
+  async function handleGenerateEmail(subject: string, body: string) {
+    const response = await axios.post(
+      `${config.BACKEND_URL}/api/v1/genai/craft`,
+      {
+        subject,
+        body,
+      },
+      {
+        withCredentials: true,
+      }
+    );
 
+    setMail((prev) => ({
+      ...prev,
+      subject: response.data.data.subject ?? prev.subject,
+      body: response.data.data.body ?? prev.body,
+    }));
+  }
 
-    setMail((prev)=>({ ...prev,
-  subject: response.data.data.subject ?? prev.subject,
-  body: response.data.data.body ?? prev.body,}))
+  async function handleLoadMore() {
 
-  
+    setLoading(true)
+
+    await fetchEmailHeaders()
+            setLoading(false)
+
   }
 
   return (
@@ -203,8 +227,8 @@ const [mail, setMail] = useState<Mail>({
         } flex px-6 py-6 bg-[#0d0d0d] text-white space-x-6`}
       >
         {/* Left Email Panel */}
-        {emails ? (
-          <MailView emails={emails!} handleEmailClick={handleEmailClick} />
+        {(emails) ? (
+          <MailView emails={emails!} handleEmailClick={handleEmailClick} handleLoadMore={handleLoadMore} load={load} loading={loading}/>
         ) : (
           <EmptyState type="no-email" />
         )}
@@ -261,7 +285,6 @@ const [mail, setMail] = useState<Mail>({
                   );
                 })}
 
-              
                 {/* Spacer to prevent overlap */}
                 <div className="h-44" />
               </div>
@@ -280,17 +303,13 @@ const [mail, setMail] = useState<Mail>({
                   return (
                     <div className="absolute bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-[#2d2d2d] pt-4 px-4 pb-6 ">
                       <div className=" flex  w-full   items-center justify-between">
-                   
-                      <h3 className="text-sm text-gray-400 mb-2 ">
-                        Replying to:{" "}
-                        <span className="text-white">
-                          {getHeader(replyTarget.impheaders, "From")}
-                        </span>
-                      </h3>
-                           <button onClick={()=> setReplyTarget(null)}>
-
-                        x
-                        </button>
+                        <h3 className="text-sm text-gray-400 mb-2 ">
+                          Replying to:{" "}
+                          <span className="text-white">
+                            {getHeader(replyTarget.impheaders, "From")}
+                          </span>
+                        </h3>
+                        <button onClick={() => setReplyTarget(null)}>x</button>
                       </div>
                       <div className="flex flex-col space-y-3 bg-[#1a1a1a] p-4 rounded-lg shadow-md">
                         <input
@@ -345,7 +364,7 @@ const [mail, setMail] = useState<Mail>({
 
       {replybox && (
         <ReplyBox
-        handleGenerateEmail={handleGenerateEmail}
+          handleGenerateEmail={handleGenerateEmail}
           mail={mail}
           setMail={setMail}
           setActiveView={setActiveView}

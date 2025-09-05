@@ -39,7 +39,7 @@ export class GoogleOAuthManager {
   static getAuthorizationURL(userId: string) {
     let state = JSON.stringify({ userId });
     state = Buffer.from(state).toString("base64");
-    console.log(state + " maaadeee");
+   // console.log(state + " maaadeee");
     const client = this.createOAuthClient();
     const url = client.generateAuthUrl({
       access_type: "offline",
@@ -81,20 +81,23 @@ export class GoogleOAuthManager {
     }
   }
 
-  /* 
-    this is for the base - dashboard with uk primary emails with header to show in the ui as default we pass primary in labels ,
-    could be use to get and show specific emails like important , sent , drafts , all , spam etc 
+    /* 
+    this is for the base - dashboard with uk primary emails with header to show in the ui as default we pass 
+    primary in labels, could be use to get and show specific emails like important, sent, drafts, all, spam, etc 
     */
   async getEmailIdsMetaDataList(
-    gmail?: gmail_v1.Gmail,
+    token?:string,
     labels: any[] = ["IMPORTANT"]
   ) {
     try {
+     // console.log("-------"+token)
       const emailThreadIds = await this.gmail!.users.messages.list({
         userId: "me",
-        maxResults: 20,
+        maxResults:20,
+        pageToken:token?token: undefined,
         labelIds: labels,
       });
+    //  console.log(JSON.stringify(emailThreadIds.data))
       return emailThreadIds.data;
     } catch (error) {
       console.log("Error in getting the Email " + error);
@@ -188,7 +191,7 @@ export class GoogleOAuthManager {
         }
       });
 
-      console.log("senddd");
+     // console.log("senddd");
     } catch (error) {
       console.log("Erorr in sending the email"+error);
     }
@@ -226,7 +229,7 @@ export class GoogleOAuthManager {
       },
     });
 
-    console.log("sent");
+   // console.log("sent");
     } catch (error) {
       console.log("error in replying within the thread"+error)
     }
