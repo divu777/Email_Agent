@@ -1,0 +1,18 @@
+FROM oven/bun:1 
+
+WORKDIR /backend    
+
+COPY package.json bun.lock ./
+
+RUN bun install 
+
+COPY . .
+
+RUN cd ./prisma && bunx prisma migrate dev
+
+EXPOSE 5555
+
+EXPOSE 8080
+
+CMD ["bun","run","start"]
+
