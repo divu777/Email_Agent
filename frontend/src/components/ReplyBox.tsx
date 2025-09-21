@@ -1,5 +1,5 @@
 import { Star } from "lucide-react";
-import  {  useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 const ReplyBox = ({
   setReplyBox,
@@ -7,53 +7,46 @@ const ReplyBox = ({
   mail,
   setMail,
   handleNewEmail,
-  handleGenerateEmail
+  handleGenerateEmail,
 }: {
   setActiveView: (x: string) => void;
   setReplyBox: (y: boolean) => void;
   mail: { to: string; subject: string; body: string };
   setMail: (x: any) => void;
-  handleNewEmail : (x:any)=>void;
-  handleGenerateEmail : (subject:string,body:string)=>Promise<any>
+  handleNewEmail: (x: any) => void;
+  handleGenerateEmail: (subject: string, body: string) => Promise<any>;
 }) => {
- const hasTypedRef = useRef(false);
-   const [emailList, setEmailList] = useState<string[]>([]);
+  const hasTypedRef = useRef(false);
+  const [emailList, setEmailList] = useState<string[]>([]);
 
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-   
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  const handleBlur = () => {
+    if (hasTypedRef.current) {
+      const trimmed = mail.to.trim();
 
-    const handleBlur = ()=>{
-      if(hasTypedRef.current){
-              const trimmed = mail.to.trim();
-
-
-        const isValid = trimmed.match(emailRegex)
-           if (isValid) {
+      const isValid = trimmed.match(emailRegex);
+      if (isValid) {
         if (!emailList.includes(trimmed)) {
           setEmailList([...emailList, trimmed]);
         }
         setMail({ ...mail, to: "" });
       } else if (trimmed) {
         alert("Invalid email address");
-                setMail({ ...mail, to: "" });
+        setMail({ ...mail, to: "" });
+      }
 
-      }
-  
-        hasTypedRef.current=false
-      }
+      hasTypedRef.current = false;
     }
+  };
   return (
-       <div className="absolute inset-0 bg-black bg-opacity-70 text-white flex items-center justify-center z-50">
+    <div className="absolute inset-0 bg-black bg-opacity-70 text-white flex items-center justify-center z-50">
       <div className="bg-[#1a1a1a] w-full max-w-lg rounded-lg p-6 shadow-lg relative">
         <h2 className="text-xl font-semibold mb-4">New Mail</h2>
 
         <div className="flex flex-col space-y-4">
           {/* Pills inside input-like container */}
-          <div
-            className="flex flex-wrap items-center bg-[#121212] border border-[#333] rounded-md px-2 py-1 min-h-[42px]"
-            
-          >
+          <div className="flex flex-wrap items-center bg-[#121212] border border-[#333] rounded-md px-2 py-1 min-h-[42px]">
             {emailList.map((email, index) => (
               <div
                 key={index}
@@ -112,8 +105,7 @@ const ReplyBox = ({
             <button
               onClick={() => {
                 // Optional: Generate logic
-                             handleGenerateEmail(mail.subject,mail.body)
-
+                handleGenerateEmail(mail.subject, mail.body);
               }}
               className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-md transition-colors"
             >

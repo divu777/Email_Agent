@@ -1,8 +1,6 @@
-import { motion } from 'framer-motion'
+import { motion } from "framer-motion";
 
 const Hero = () => {
-
-
   return (
     <div className="h-auto bg-white flex flex-col justify-center px-6 md:px-12 md:my-32">
       {/* Text Section */}
@@ -16,17 +14,16 @@ const Hero = () => {
           Transform Your Inbox into a Powerhouse ✨
         </h1>
         <h3 className="mt-4 text-lg md:text-xl text-gray-600 max-w-2xl mx-auto">
-          Your personal AI agent that writes, analyzes, and handles the chaos — all from a single prompt.
+          Your personal AI agent that writes, analyzes, and handles the chaos —
+          all from a single prompt.
         </h3>
         <div className="mt-8">
-          <button
-            
-            className="bg-black text-white px-8 py-3 rounded-xl font-semibold text-lg hover:bg-gray-900 transition duration-300 shadow-md hover:shadow-lg"
-          >
+          <button className="bg-black text-white px-8 py-3 rounded-xl font-semibold text-lg hover:bg-gray-900 transition duration-300 shadow-md hover:shadow-lg">
             Start Free — No Setup Needed
           </button>
           <p className="mt-2 text-sm text-gray-500">
-            No credit card required — unless you're feeling generous, then drop your UPI 😉
+            No credit card required — unless you're feeling generous, then drop
+            your UPI 😉
           </p>
         </div>
       </motion.div>
@@ -62,7 +59,7 @@ const Hero = () => {
         </motion.div>
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default Hero
+export default Hero;

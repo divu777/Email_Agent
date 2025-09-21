@@ -1,25 +1,29 @@
-"use client"
+"use client";
 
-import { motion, useInView } from "framer-motion"
-import { useRef } from "react"
-import { Github, Linkedin, Twitter } from "lucide-react"
-import { Link } from "react-router-dom"
+import { motion, useInView } from "framer-motion";
+import { useRef } from "react";
+import { Github, Linkedin, Twitter } from "lucide-react";
+import { Link } from "react-router-dom";
 
 export default function Footer() {
-  const letters = "DIVAKAR".split("")
-  const ref = useRef(null)
-  const isInView = useInView(ref, { once: true, amount: 0.5 })
+  const letters = "DIVAKAR".split("");
+  const ref = useRef(null);
+  const isInView = useInView(ref, { once: true, amount: 0.5 });
 
   const navItems = [
     { name: "HOME", path: "/" },
     { name: "DASHBOARD", path: "/dashboard" },
     { name: "ABOUT ME", path: "/about-me" },
-  ]
-    const socialLinks = [
+  ];
+  const socialLinks = [
     { name: "GitHub", icon: Github, href: "https://github.com/divu777" },
-    { name: "LinkedIn", icon: Linkedin, href: "https://www.linkedin.com/in/divakar-jaiswal/" },
+    {
+      name: "LinkedIn",
+      icon: Linkedin,
+      href: "https://www.linkedin.com/in/divakar-jaiswal/",
+    },
     { name: "Twitter", icon: Twitter, href: "https://x.com/_chota_don_" },
-  ]
+  ];
 
   return (
     <footer className="bg-black text-white">
@@ -119,5 +123,5 @@ export default function Footer() {
         </motion.div>
       </div>
     </footer>
-  )
+  );
 }

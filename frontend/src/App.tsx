@@ -1,9 +1,8 @@
-
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./Landing";
 import AboutMe from "./components/About";
 import Login from "./components/Login";
-import Dashboard2 from "./components/Dashboard2";
+import Dashboard from "./components/Dashboard";
 
 export default function App() {
   return (
@@ -15,16 +14,13 @@ export default function App() {
           path="/dashboard"
           element={
             <>
-              <Dashboard2 />
+              <Dashboard />
             </>
           }
         />
         <Route path="/about-me/*" element={<AboutMe />} />
-        <Route 
-        path="/login"
-        element={<Login/>}/>
+        <Route path="/login" element={<Login />} />
       </Routes>
     </BrowserRouter>
   );
 }
-

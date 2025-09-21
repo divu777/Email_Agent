@@ -1,4 +1,3 @@
-
 import { motion } from "framer-motion";
 import { AlertOctagon } from "lucide-react";
 
@@ -18,7 +17,9 @@ export const ErrorState = ({ error }: ErrorStateProps) => {
         <div className="w-12 h-12 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-4">
           <AlertOctagon className="h-6 w-6 text-red-500" />
         </div>
-        <h2 className="text-xl font-semibold text-slate-800 mb-2">Something went wrong</h2>
+        <h2 className="text-xl font-semibold text-slate-800 mb-2">
+          Something went wrong
+        </h2>
         <p className="text-red-500 mb-4">{error}</p>
         <button
           onClick={() => window.location.reload()}
@@ -30,4 +31,3 @@ export const ErrorState = ({ error }: ErrorStateProps) => {
     </div>
   );
 };
-

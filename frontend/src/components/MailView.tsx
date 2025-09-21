@@ -1,17 +1,17 @@
-import { EmailsType } from "./Dashboard2";
+import { EmailsType } from "./Dashboard";
 
 const MailView = ({
   emails,
   handleEmailClick,
   handleLoadMore,
   load,
-  loading
+  loading,
 }: {
   emails: EmailsType[];
   handleEmailClick: (threadId: string) => void;
   handleLoadMore: () => void;
   load: string;
-  loading:boolean
+  loading: boolean;
 }) => {
   return (
     <div className="h-full w-2/5 bg-[#1a1a1a] flex flex-col px-6 py-6 space-y-6 rounded-lg border border-[#2a2a2a] shadow-md">

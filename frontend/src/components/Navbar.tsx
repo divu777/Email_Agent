@@ -2,15 +2,12 @@ import { Link } from "react-router-dom";
 
 import { motion } from "framer-motion";
 
-import {   useState } from "react";
+import { useState } from "react";
 import { Zap } from "lucide-react";
-import { Menu, X } from 'lucide-react';
+import { Menu, X } from "lucide-react";
 
 const Navbar = () => {
-    const [loggedIn]= useState(false)
-
-    
-
+  const [loggedIn] = useState(false);
 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
@@ -20,7 +17,10 @@ const Navbar = () => {
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
           <div className="flex items-center gap-2">
-            <Link to="/" className="flex items-center gap-2 text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors">
+            <Link
+              to="/"
+              className="flex items-center gap-2 text-xl font-bold text-gray-800 hover:text-blue-600 transition-colors"
+            >
               <Zap className="h-6 w-6 text-blue-600" />
               <span>Vektor</span>
             </Link>
@@ -28,14 +28,14 @@ const Navbar = () => {
 
           {/* Desktop Navigation */}
           <nav className="hidden md:flex md:items-center md:space-x-4">
-            <Link 
+            <Link
               to="/about-me"
               className="px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-blue-50 hover:text-blue-600 transition duration-150"
             >
               About Us
             </Link>
             {loggedIn && (
-              <Link 
+              <Link
                 to="/dashboard"
                 className="px-3 py-2 text-sm font-medium text-gray-700 rounded-md hover:bg-blue-50 hover:text-blue-600 transition duration-150"
               >
@@ -44,16 +44,16 @@ const Navbar = () => {
             )}
             {loggedIn ? (
               <div className="flex items-center gap-4">
-                  <motion.button
-                    whileHover={{ scale: 1.05 }}
-                    whileTap={{ scale: 0.95 }}
-                    className="text-sm px-4 py-1.5 rounded-full border border-red-500 text-red-600 hover:bg-red-50 transition-all duration-300"
-                  >
-                    Log Out
-                  </motion.button>
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="text-sm px-4 py-1.5 rounded-full border border-red-500 text-red-600 hover:bg-red-50 transition-all duration-300"
+                >
+                  Log Out
+                </motion.button>
               </div>
             ) : (
-                <Link to="/login">
+              <Link to="/login">
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
@@ -64,8 +64,7 @@ const Navbar = () => {
                     →
                   </span>
                 </motion.button>
-                </Link>
-
+              </Link>
             )}
           </nav>
 
@@ -75,7 +74,9 @@ const Navbar = () => {
               onClick={() => setIsMenuOpen(!isMenuOpen)}
               className="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
             >
-              <span className="sr-only">{isMenuOpen ? 'Close menu' : 'Open menu'}</span>
+              <span className="sr-only">
+                {isMenuOpen ? "Close menu" : "Open menu"}
+              </span>
               {isMenuOpen ? (
                 <X className="block h-6 w-6" aria-hidden="true" />
               ) : (

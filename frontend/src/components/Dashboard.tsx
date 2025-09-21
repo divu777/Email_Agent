@@ -4,7 +4,7 @@ import axios from "axios";
 import { Star } from "lucide-react";
 import { IoReturnUpBack } from "react-icons/io5";
 import ReplyBox from "./ReplyBox";
-import MailView from "./MailView2";
+import MailView from "./MailView";
 import EmptyState from "./EmptyState";
 import { config } from "../config";
 
@@ -62,34 +62,31 @@ const Dashboard2 = () => {
     body: string;
   };
 
-const [mail, setMail] = useState<Mail>({
-  to: "",
-  subject: "",
-  body: "",
-});
+  const [mail, setMail] = useState<Mail>({
+    to: "",
+    subject: "",
+    body: "",
+  });
 
-  const [load,setLoad] = useState("0")
+  const [load, setLoad] = useState("0");
 
-      const fetchEmailHeaders = async () => {
-      const response = await axios.get(
-        `${config.BACKEND_URL}/api/v1/google/emails/${load}`,
-        {
-          withCredentials: true,
-        }
-      );
+  const fetchEmailHeaders = async () => {
+    const response = await axios.get(
+      `${config.BACKEND_URL}/api/v1/google/emails/${load}`,
+      {
+        withCredentials: true,
+      }
+    );
 
-      // console.log(JSON.stringify(response.data))
-      setEmails((prev)=>[...prev,...response.data.array]);
-      setLoad(response.data.nextPageToken)
-    };
+    // console.log(JSON.stringify(response.data))
+    setEmails((prev) => [...prev, ...response.data.array]);
+    setLoad(response.data.nextPageToken);
+  };
 
-    const [loading,setLoading] = useState(false)
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-
-
     fetchEmailHeaders();
-
   }, []);
 
   useEffect(() => {
@@ -151,7 +148,7 @@ const [mail, setMail] = useState<Mail>({
       ? originalSubject
       : `Re: ${originalSubject}`;
 
-     await axios.post(
+    await axios.post(
       `${config.BACKEND_URL}/api/v1/google/email/reply`,
       {
         body: body,
@@ -172,7 +169,7 @@ const [mail, setMail] = useState<Mail>({
     subject: string;
     body: string;
   }) => {
-     await axios.post(
+    await axios.post(
       `${config.BACKEND_URL}/api/v1/google/email/new`,
       {
         ...mail,
@@ -203,12 +200,10 @@ const [mail, setMail] = useState<Mail>({
   }
 
   async function handleLoadMore() {
+    setLoading(true);
 
-    setLoading(true)
-
-    await fetchEmailHeaders()
-            setLoading(false)
-
+    await fetchEmailHeaders();
+    setLoading(false);
   }
 
   return (
@@ -226,8 +221,14 @@ const [mail, setMail] = useState<Mail>({
         } flex px-6 py-6 bg-[#0d0d0d] text-white space-x-6`}
       >
         {/* Left Email Panel */}
-        {(emails) ? (
-          <MailView emails={emails!} handleEmailClick={handleEmailClick} handleLoadMore={handleLoadMore} load={load} loading={loading}/>
+        {emails ? (
+          <MailView
+            emails={emails!}
+            handleEmailClick={handleEmailClick}
+            handleLoadMore={handleLoadMore}
+            load={load}
+            loading={loading}
+          />
         ) : (
           <EmptyState type="no-email" />
         )}
