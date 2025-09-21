@@ -8,11 +8,13 @@ RUN bun install
 
 COPY . .
 
-RUN cd ./prisma && bunx prisma migrate dev
+RUN apt-get update -y && apt-get install -y openssl
+
+RUN cd ./prisma && bunx prisma generate
 
 EXPOSE 5555
 
 EXPOSE 8080
 
-CMD ["bun","run","start"]
+CMD ["sh", "-c", "bunx prisma migrate deploy && bun run start"]
 

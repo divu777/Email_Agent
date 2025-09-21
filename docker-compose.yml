@@ -6,6 +6,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile.prod
+    env_file:
+      - ./frontend/.env
       
     ports:
       - "3001:80"
@@ -13,10 +15,13 @@ services:
   backend:
     build:
       context: ./backend
-      dockerfile: Dockerfile
+      dockerfile: Dockerfile.prod
 
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+    env_file:
+      - ./backend/.env
     ports:
       - "8081:8080"
 
@@ -30,6 +35,11 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=mysupersecretpassword
+    healthcheck:                      
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      retries: 5
+      timeout: 5s
 
 volumes:
   postgres_data:
