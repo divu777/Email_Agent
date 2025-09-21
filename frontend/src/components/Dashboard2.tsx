@@ -48,7 +48,6 @@ export type EmailType2 = {
 };
 const Dashboard2 = () => {
   const [selectedMail, setselectedMail] = useState<boolean>(false);
-  const [chatVisible, setChatVisible] = useState(false);
   const [activeView, setActiveView] = useState("mail");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [email, setEmail] = useState<EmailType2 | null>(null);
@@ -152,7 +151,7 @@ const [mail, setMail] = useState<Mail>({
       ? originalSubject
       : `Re: ${originalSubject}`;
 
-    const res = await axios.post(
+     await axios.post(
       `${config.BACKEND_URL}/api/v1/google/email/reply`,
       {
         body: body,
@@ -173,7 +172,7 @@ const [mail, setMail] = useState<Mail>({
     subject: string;
     body: string;
   }) => {
-    const response = await axios.post(
+     await axios.post(
       `${config.BACKEND_URL}/api/v1/google/email/new`,
       {
         ...mail,
@@ -239,7 +238,7 @@ const [mail, setMail] = useState<Mail>({
             <>
               {/* Thread scrollable area */}
               <div className="flex-1 overflow-y-auto pr-2 space-y-6 mt-4 pb-40">
-                {email.messages.map((msg, index) => {
+                {email.messages.map((msg) => {
                   const fromHeader =
                     msg.impheaders.find((h) => h.name === "From")?.value ||
                     "Unknown Sender";
