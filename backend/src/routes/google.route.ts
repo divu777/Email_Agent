@@ -105,14 +105,14 @@ router.get("/emails/:pageToken", authTokenMiddleware, async(req, res) => {
     const response = await client.getEmailIdsMetaDataList(pageToken)
 
 
-    if(!response || !response.messages){
+    if(!response || !response.threads){
       return
     }
 
     let MessageArray = []
 
-    MessageArray = await Promise.all ( response.messages.map((msg:any) => {
-         return client.getEmailData(msg.id)!
+    MessageArray = await Promise.all ( response.threads.map((thread:any) => {
+         return client.getEmailData(thread.id)!
     }));
 
     MessageArray = MessageArray.map((message)=>{

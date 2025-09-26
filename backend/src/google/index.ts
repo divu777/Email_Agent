@@ -91,7 +91,7 @@ export class GoogleOAuthManager {
   ) {
     try {
      // console.log("-------"+token)
-      const emailThreadIds = await this.gmail!.users.messages.list({
+      const emailThreadIds = await this.gmail!.users.threads.list({
         userId: "me",
         maxResults:20,
         pageToken:token?token: undefined,
