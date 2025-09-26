@@ -42,17 +42,19 @@ export type EmailType = {
   messages: EmailsType[];
   impheaders: { value: string; name: string }[];
 };
+
 export type EmailType2 = {
   id: string;
   messages: EmailSummary[];
 };
+
 const Dashboard2 = () => {
-  const [selectedMail, setselectedMail] = useState<boolean>(false);
+  const [selectedMail, setselectedMail] = useState(false);
   const [activeView, setActiveView] = useState("mail");
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [email, setEmail] = useState<EmailType2 | null>(null);
   const [emails, setEmails] = useState<EmailsType[]>([]);
-  const [response, setResponse] = useState<string>("");
+  const [response, setResponse] = useState("");
   const [replyTarget, setReplyTarget] = useState<EmailSummary | null>(null);
   const [replybox, setReplyBox] = useState(false);
 
@@ -74,8 +76,8 @@ const Dashboard2 = () => {
   const fetchEmailHeaders = async () => {
     const response = await axios.get(
       `${config.BACKEND_URL}/api/v1/google/emails/${load}`,
-      {withCredentials: true}
-    );  // console.log(JSON.stringify(response.data))
+      { withCredentials: true }
+    );
     setEmails((prev) => [...prev, ...response.data.array]);
     setLoad(response.data.nextPageToken);
   };
@@ -99,21 +101,19 @@ const Dashboard2 = () => {
     setselectedMail(true);
     setResponse("");
   };
+
   const getHeader = (
     headers: { name: string; value: string }[],
     name: string
-  ) => {
-    return (
-      headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ||
-      ""
-    );
-  };
+  ) =>
+    headers.find((h) => h.name.toLowerCase() === name.toLowerCase())?.value ||
+    "";
 
   const handleGenerateReply = async (emailselected: EmailType2) => {
     const response = await axios.post(
       `${config.BACKEND_URL}/api/v1/genai/reply`,
-      {email: emailselected},
-      {withCredentials: true}
+      { email: emailselected },
+      { withCredentials: true }
     );
     setResponse(response.data.reply);
   };
@@ -141,14 +141,14 @@ const Dashboard2 = () => {
     await axios.post(
       `${config.BACKEND_URL}/api/v1/google/email/reply`,
       {
-        body: body,
+        body,
         messageId: messageIdHeader?.value || "",
         references: referencesHeader?.value || messageIdHeader?.value || "",
         to: fromHeader?.value || "",
         subject,
         threadId: email?.id,
       },
-      {withCredentials: true}
+      { withCredentials: true }
     );
   };
 
@@ -159,15 +159,15 @@ const Dashboard2 = () => {
   }) => {
     await axios.post(
       `${config.BACKEND_URL}/api/v1/google/email/new`,
-      {...mail},
-      {withCredentials: true}
+      { ...mail },
+      { withCredentials: true }
     );
   };
 
-  async function handleGenerateEmail(subject: string, body: string) {
+  const handleGenerateEmail = async (subject: string, body: string) => {
     const response = await axios.post(
       `${config.BACKEND_URL}/api/v1/genai/craft`,
-      { subject,body,},
+      { subject, body },
       { withCredentials: true }
     );
     setMail((prev) => ({
@@ -175,16 +175,16 @@ const Dashboard2 = () => {
       subject: response.data.data.subject ?? prev.subject,
       body: response.data.data.body ?? prev.body,
     }));
-  }
+  };
 
-  async function handleLoadMore() {
+  const handleLoadMore = async () => {
     setLoading(true);
     await fetchEmailHeaders();
     setLoading(false);
-  }
+  };
 
   return (
-    <div className="bg-black min-h-screen">
+    <div className="bg-white min-h-screen">
       <Sidebar
         setActiveView={setActiveView}
         activeView={activeView}
@@ -195,12 +195,11 @@ const Dashboard2 = () => {
       <div
         className={`h-screen w-auto ${
           isCollapsed ? "lg:ml-20" : "lg:ml-64"
-        } flex px-6 py-6 bg-[#0d0d0d] text-white space-x-6`}
+        } flex px-6 py-6 bg-gray-50 text-gray-800 space-x-6`}
       >
-        {/* Left Email Panel */}
-        {emails ? (
+        {emails.length > 0 ? (
           <MailView
-            emails={emails!}
+            emails={emails}
             handleEmailClick={handleEmailClick}
             handleLoadMore={handleLoadMore}
             load={load}
@@ -214,59 +213,50 @@ const Dashboard2 = () => {
         <div className="flex-1 flex flex-col relative overflow-hidden">
           {selectedMail && email ? (
             <>
-              {/* Thread scrollable area */}
               <div className="flex-1 overflow-y-auto pr-2 space-y-6 mt-4 pb-40">
                 {email.messages.map((msg) => {
-                  const fromHeader =
-                    msg.impheaders.find((h) => h.name === "From")?.value ||
-                    "Unknown Sender";
-                  const subject =
-                    msg.impheaders.find((h) => h.name === "Subject")?.value ||
-                    "No subject";
-                  const timestamp = new Date(Date.now()).toLocaleString();
+                  const fromHeader = getHeader(msg.impheaders, "From");
+                  const subject = getHeader(msg.impheaders, "Subject");
+                  const timestamp = new Date().toLocaleString();
 
                   return (
                     <div
                       key={msg.id}
-                      className="flex flex-col gap-2 border-b border-[#2d2d2d] pb-6 pt-4"
+                      className="flex flex-col gap-2 border-b border-gray-300 pb-6 pt-4"
                     >
-                      {/* Header */}
                       <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 bg-orange-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
+                          <div className="w-10 h-10 bg-blue-500 text-white rounded-full flex items-center justify-center font-bold text-lg">
                             {fromHeader.charAt(0).toUpperCase()}
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-white">
+                            <p className="text-sm font-semibold text-gray-800">
                               {fromHeader}
                             </p>
-                            <p className="text-xs text-gray-400">{subject}</p>
+                            <p className="text-xs text-gray-600">{subject}</p>
                           </div>
                         </div>
                         <span className="text-xs text-gray-500">
                           {timestamp}
                         </span>
                         <IoReturnUpBack
-                          className="cursor-pointer"
+                          className="cursor-pointer text-gray-500 hover:text-blue-500"
                           onClick={() => setReplyTarget(msg)}
                         />
                       </div>
 
-                      {/* Message content */}
                       <div className="ml-14 pr-2">
-                        <p className="text-sm text-gray-300 leading-relaxed whitespace-pre-line">
+                        <p className="text-sm text-gray-600 leading-relaxed whitespace-pre-line">
                           {msg.snippet}
                         </p>
                       </div>
                     </div>
                   );
                 })}
-
-                {/* Spacer to prevent overlap */}
                 <div className="h-44" />
               </div>
 
-              {/* Reply Box - Stays Fixed at Bottom */}
+              {/* Reply Box */}
               {replyTarget &&
                 (() => {
                   const originalSubject = getHeader(
@@ -278,53 +268,54 @@ const Dashboard2 = () => {
                     : `Re: ${originalSubject}`;
 
                   return (
-                    <div className="absolute bottom-0 left-0 right-0 bg-[#0d0d0d] border-t border-[#2d2d2d] pt-4 px-4 pb-6 ">
-                      <div className=" flex  w-full   items-center justify-between">
-                        <h3 className="text-sm text-gray-400 mb-2 ">
+                    <div className="absolute bottom-0 left-0 right-0 bg-white border-t border-gray-300 pt-4 px-4 pb-6">
+                      <div className="flex w-full items-center justify-between">
+                        <h3 className="text-sm text-gray-600 mb-2">
                           Replying to:{" "}
-                          <span className="text-white">
+                          <span className="text-gray-800">
                             {getHeader(replyTarget.impheaders, "From")}
                           </span>
                         </h3>
-                        <button onClick={() => setReplyTarget(null)}>x</button>
+                        <button
+                          onClick={() => setReplyTarget(null)}
+                          className="text-gray-400 hover:text-gray-600"
+                        >
+                          ×
+                        </button>
                       </div>
-                      <div className="flex flex-col space-y-3 bg-[#1a1a1a] p-4 rounded-lg shadow-md">
+                      <div className="flex flex-col space-y-3 bg-gray-100 p-4 rounded-lg shadow-sm">
                         <input
                           type="text"
                           value={replySubject}
                           disabled
-                          className="bg-[#121212] text-white border border-[#333] rounded-md px-4 py-2"
+                          className="bg-white text-gray-800 border border-gray-300 rounded-md px-4 py-2"
                         />
                         <textarea
                           rows={4}
                           value={response}
                           onChange={(e) => setResponse(e.target.value)}
                           placeholder="Write your reply..."
-                          className="w-full bg-[#121212] text-white border border-[#333] rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-orange-500 placeholder-gray-500 resize-none"
+                          className="w-full bg-white text-gray-700 border border-gray-300 rounded-md px-4 py-3 resize-none"
                         />
                         <div className="flex justify-between items-center">
-                          <div className="flex items-center space-x-3">
-                            <button
-                              onClick={() => handleSendReply()}
-                              className="bg-orange-500 hover:bg-orange-600 text-white text-sm px-5 py-2 rounded-md transition-colors"
-                            >
-                              Send
-                            </button>
-                          </div>
-                          <div className="flex items-center space-x-4">
-                            <button
-                              className="flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white text-sm px-4 py-2 rounded-md transition-colors"
-                              onClick={() =>
-                                handleGenerateReply({
-                                  ...email!,
-                                  messages: [replyTarget],
-                                })
-                              }
-                            >
-                              <Star size={16} />
-                              Generate
-                            </button>
-                          </div>
+                          <button
+                            onClick={handleSendReply}
+                            className="bg-blue-500 hover:bg-blue-600 text-white text-sm px-5 py-2 rounded-md"
+                          >
+                            Send
+                          </button>
+                          <button
+                            onClick={() =>
+                              handleGenerateReply({
+                                ...email!,
+                                messages: [replyTarget],
+                              })
+                            }
+                            className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 text-white text-sm px-4 py-2 rounded-md"
+                          >
+                            <Star size={16} />
+                            Generate
+                          </button>
                         </div>
                       </div>
                     </div>

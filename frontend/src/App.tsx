@@ -2,7 +2,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Landing from "./Landing";
 import AboutMe from "./components/About";
 import Login from "./components/Login";
-import Dashboard from "./components/Dashboard";
+import Dashboard from "./components/Dashboard_v2";
 
 export default function App() {
   return (
