@@ -3,7 +3,7 @@ import Sidebar from "./Sidebar_v2";
 import axios from "axios";
 import { Star } from "lucide-react";
 import { IoReturnUpBack } from "react-icons/io5";
-import ReplyBox from "./ReplyBox";
+import ReplyBox from "./ReplyBox_v2";
 import MailView from "./MailView_v2";
 import EmptyState from "./EmptyState";
 import { config } from "../config";
