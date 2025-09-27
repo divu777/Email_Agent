@@ -14,7 +14,7 @@ const MailView = ({
   loading: boolean;
 }) => {
   return (
-    <div className="h-full w-2/5 bg-white flex flex-col px-6 py-6 space-y-6 rounded-lg border border-gray-200 shadow-sm">
+    <div className="h-full w-full lg:w-2/5 bg-white flex flex-col px-6 py-6 space-y-6 rounded-lg border border-gray-200 shadow-sm">
       {/* Search Bar */}
       <div>
         <input
@@ -34,7 +34,7 @@ const MailView = ({
               onClick={() => handleEmailClick(email.threadId)}
             >
               <p className="text-sm font-semibold text-blue-600">
-                {email.subject || "No Subject"}
+                {email.subject ? (email.subject=='Re:'? 'No Subject':email.subject ): "No Subject"}
               </p>
               <p className="text-xs text-gray-500 mt-1">
                 {email.from || "Unknown Sender"}

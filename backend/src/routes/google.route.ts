@@ -99,19 +99,19 @@ router.get("/emails/:pageToken", authTokenMiddleware, async(req, res) => {
 
     const pageToken = req.params.pageToken
 
-
+    
     const client = new GoogleOAuthManager(token)
 
-    const response = await client.getEmailIdsMetaDataList(pageToken)
+    const response = await client.getEmailIdsMetaDataList(pageToken=="0"?undefined:pageToken)
 
 
-    if(!response || !response.threads){
+    if(!response || !response.messages){
       return
     }
-
+    //console.log(JSON.stringify(response))
     let MessageArray = []
 
-    MessageArray = await Promise.all ( response.threads.map((thread:any) => {
+    MessageArray = await Promise.all ( response.messages.map((thread:any) => {
          return client.getEmailData(thread.id)!
     }));
 

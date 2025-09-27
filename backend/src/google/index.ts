@@ -91,13 +91,13 @@ export class GoogleOAuthManager {
   ) {
     try {
      // console.log("-------"+token)
-      const emailThreadIds = await this.gmail!.users.threads.list({
+      const emailThreadIds = await this.gmail!.users.messages.list({
         userId: "me",
         maxResults:20,
         pageToken:token?token: undefined,
         labelIds: labels,
       });
-    //  console.log(JSON.stringify(emailThreadIds.data))
+     //console.log(JSON.stringify(emailThreadIds))
       return emailThreadIds.data;
     } catch (error) {
       console.log("Error in getting the Email " + error);
@@ -122,7 +122,7 @@ export class GoogleOAuthManager {
       delete emailData.data.payload;
       return { ...emailData.data, impheaders };
     } catch (error) {
-      console.log("Error in getting the Email " + error);
+      console.log("Error in getting the Email 2 " + error);
     }
   }
 
