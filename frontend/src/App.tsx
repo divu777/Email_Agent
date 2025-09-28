@@ -20,7 +20,6 @@ export default function App() {
         />
         <Route path="/about-me/*" element={<AboutMe />} />
         <Route path="/login" element={<Login />} />
-        {/* <Route path="/search" element={<Search/>}/> */}
       </Routes>
     </BrowserRouter>
   );
