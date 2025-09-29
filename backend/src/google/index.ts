@@ -112,12 +112,13 @@ export class GoogleOAuthManager {
         id: messageId,
         format,
       });
+    // console.log(JSON.stringify(emailData)+"------>")
       const impheaders = emailData.data.payload?.headers?.filter(
         (head) =>
           head.name === "From" ||
           head.name === "Subject" ||
-          head.value === "Date" ||
-          head.value === "To"
+          head.name === "Date" ||
+          head.name === "To"
       );
       delete emailData.data.payload;
       return { ...emailData.data, impheaders };
@@ -126,16 +127,17 @@ export class GoogleOAuthManager {
     }
   }
 
-  async getfullThreadId(threadId: string, format: string) {
+  async getfullThreadId(threadId: string, format: string ='full') {
     try {
       const { data } = await this.gmail!.users.threads.get({
         userId: "me",
         id: threadId,
         format,
       });
-
+      //console.log(JSON.stringify(data)+"--->>>>")
 
       data.messages = data.messages!.map((message) => {
+
          const impheaders = message?.payload?.headers?.filter(
         (head) =>
           head.name === "From" ||
@@ -145,12 +147,13 @@ export class GoogleOAuthManager {
           head.name === 'References' ||
           head.name === 'Message-ID'
       );
+
         delete message.payload;
         return {
           id: message.id,
           snippet: message.snippet,
           labels: message.labelIds,
-          impheaders
+          impheaders,
         };
       });
 
@@ -161,6 +164,7 @@ export class GoogleOAuthManager {
       console.log("error in getting the whole thread " + error);
     }
   }
+
 
   async sendEmail(data: SendMessageType) {
     try {
@@ -235,6 +239,7 @@ export class GoogleOAuthManager {
     }
   }
 }
+
 
 
 const SendMessageSchema = z.object({

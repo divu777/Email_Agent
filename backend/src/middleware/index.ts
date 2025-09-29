@@ -11,10 +11,14 @@ export const authTokenMiddleware = async (
   next: NextFunction
 ) => {
   try {
+
     const token = req.cookies["email-agent"];
 
     if (!token) {
-      res.redirect(config.REDIRECT_FRONTEND_URL);
+
+      res.json({
+        success:false,
+        redirectUrl:config.REDIRECT_FRONTEND_URL});
       return;
     }
 
@@ -44,7 +48,9 @@ export const authTokenMiddleware = async (
           sameSite:'lax',
           secure:req.hostname==='localhost'?false:true
         })
-        res.redirect(config.FRONTEND_URL);
+        res.json({
+          success:false,
+          redirectUrl:config.FRONTEND_URL});
         return;
       }
 

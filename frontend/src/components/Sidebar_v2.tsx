@@ -1,5 +1,9 @@
+import axios from "axios";
+import { motion } from "framer-motion";
 import { Mail, LogOut, Zap, ChevronLeft, ChevronRight } from "lucide-react";
 import { IoCreateOutline } from "react-icons/io5";
+import { config } from "../config";
+import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   setActiveView: (view: string) => void;
@@ -19,20 +23,29 @@ const Sidebar = ({
     { id: "send-mail", icon: IoCreateOutline, label: "Send Email" },
   ];
 
+
+  const handleLogout=async()=>{
+    const response = await axios.post(`${config.BACKEND_URL}/api/v1/google/logout`,{},{
+      withCredentials:true
+    })
+    if(!response.data.success && response.data.redirectUrl){
+      window.location.href=response.data.redirectUrl
+    }
+  }
+
   return (
     <>
       {/* Desktop Sidebar */}
-      <div
-        className={`hidden lg:block fixed h-screen transition-all duration-300 ease-in-out
-        ${
-          isCollapsed ? "w-20" : "w-64"
-        } bg-white border-r border-gray-200 shadow-sm`}
-      >
+      <motion.div
+  layout="position"
+  className={`hidden lg:block fixed h-screen bg-white border-r border-gray-200 shadow-sm 
+    ${isCollapsed ? "w-20" : "w-64"}`}
+>
         {/* Branding */}
         <div className="flex items-center p-6 border-b border-gray-200">
           <Zap className="w-6 h-6 text-blue-600" />
           <span
-            className={`ml-3 font-semibold text-gray-800 transition-opacity duration-200 ${
+            className={`ml-3 font-semibold text-gray-800 transition-opacity  ${
               isCollapsed ? "opacity-0 hidden" : "opacity-100"
             }`}
           >
@@ -69,6 +82,7 @@ const Sidebar = ({
         <div className="absolute bottom-0 w-full px-3 py-4 border-t border-gray-200 space-y-2">
           {/* Logout */}
           <button
+          onClick={()=>handleLogout()}
             className={`w-full flex items-center px-3 py-3 text-red-500 rounded-lg transition-colors duration-200 hover:bg-gray-100 ${
               isCollapsed ? "justify-center" : ""
             }`}
@@ -100,7 +114,7 @@ const Sidebar = ({
             )}
           </button>
         </div>
-      </div>
+      </motion.div>
 
       {/* Mobile Bottom Navigation */}
       <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-md z-40">
@@ -117,7 +131,9 @@ const Sidebar = ({
               <span className="text-xs mt-1">{label}</span>
             </button>
           ))}
-          <button className="flex flex-col items-center justify-center flex-1 py-1 text-red-500">
+          <button className="flex flex-col items-center justify-center flex-1 py-1 text-red-500"
+          onClick={()=>handleLogout()}
+          >
             <LogOut className="w-6 h-6" />
             <span className="text-xs mt-1">Logout</span>
           </button>

@@ -41,7 +41,7 @@ const ReplyBox = ({
   };
 
   return (
-    <div className="absolute inset-0 bg-black bg-opacity-40 text-gray-800 flex items-center justify-center z-50">
+    <div className="absolute inset-0 bg-black/50 bg-opacity-40 text-gray-800 flex items-center justify-center z-50">
       <div className="bg-white w-full max-w-lg rounded-lg p-6 shadow-lg relative">
         <h2 className="text-xl font-semibold mb-4">New Mail</h2>
 

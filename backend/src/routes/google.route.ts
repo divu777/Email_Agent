@@ -1,7 +1,7 @@
 import express from "express";
 import { GoogleOAuthManager } from "../google";
 import { randomUUIDv7 } from "bun";
-import jwt from "jsonwebtoken";
+import jwt, { type JwtPayload } from "jsonwebtoken";
 import config from "../config";
 import { authTokenMiddleware } from "../middleware";
 import {prisma} from "../../prisma/index"
@@ -10,7 +10,7 @@ import z, { success } from "zod/v4";
 const router = express.Router();
 
 router.get("/callback", async (req, res) => {
-  console.log("--------")
+  //console.log("--------")
   const { state, code } = req.query;
   if (state != req.session.state) {
     res.redirect(config.REDIRECT_FRONTEND_URL);
@@ -69,11 +69,42 @@ router.get("/callback", async (req, res) => {
   return;
 });
 
-router.get("/authorizationUrl", (req, res) => {
+router.get("/authorizationUrl", async(req, res) => {
   try {
+      const isLocalhost = req.hostname === "localhost";
+
     const token =  req.cookies["email-agent"]
     if (token) {
-      res.send(config.DASHBOARD_URL);
+      const decoded = jwt.verify(token,config.JWT_SECRET!) as JwtPayload
+      if(!decoded || !decoded.email){
+        res.clearCookie('email-agent',{
+          httpOnly:true,
+          secure:!isLocalhost,
+          sameSite:"lax"
+        })
+
+      }else{
+
+        const userExist = await prisma.user.findUnique({
+          where:{
+            email:decoded.email
+          }
+        })
+
+        if(!userExist){
+          res.clearCookie('email-agent',{
+            httpOnly:true,
+            secure:!isLocalhost,
+            sameSite:'lax'
+          })
+
+        }else{
+          res.send({
+            success:false,
+            redirectUrl:config.DASHBOARD_URL})
+        }
+
+      }
       return;
     }
     const randomId = randomUUIDv7();
@@ -174,7 +205,7 @@ router.get("/email/:threadId",authTokenMiddleware,async(req,res)=>{
 
     const gmalInstance = new GoogleOAuthManager(tokens)
 
-    const data = await gmalInstance.getfullThreadId(threadId,'metadata')
+    const data = await gmalInstance.getfullThreadId(threadId,'full')
 
     res.json({
       message:"data fetched of the email",
@@ -285,6 +316,35 @@ router.post("/email/new",authTokenMiddleware,async(req,res)=>{
     console.log("Error in sending new email "+error);
     res.json({
       message:"Error in sending new email",
+      success:false
+    })
+  }
+})
+
+
+router.post("/logout",authTokenMiddleware,async(req,res)=>{
+  try {
+    const email = req.email
+    if(!email){
+      return
+    }
+   const islocalHost = req.hostname=="localhost"
+
+    res.clearCookie('email-agent',{
+      httpOnly:true,
+      secure:!islocalHost,
+      sameSite:"lax"
+    })
+
+    res.json({
+      success:false,
+      redirectUrl:config.FRONTEND_URL})
+
+    
+  } catch (error) {
+    console.log("Error is deleting account: "+error);
+    res.json({
+      message:"Error in logging out",
       success:false
     })
   }

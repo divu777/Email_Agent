@@ -4,7 +4,8 @@
   "type": "module",
   "private": true,
   "devDependencies": {
-    "@types/bun": "latest"  },
+    "@types/bun": "latest"
+  },
   "scripts": {
     "start": "bun src/index.ts",
     "dev": "bun run start"
@@ -14,6 +15,7 @@
   },
   "dependencies": {
     "@huggingface/inference": "^4.3.2",
+    "@langchain/openai": "^0.6.13",
     "@modelcontextprotocol/sdk": "^1.12.0",
     "@prisma/client": "^6.9.0",
     "@types/cookie-parser": "^1.4.8",
@@ -27,6 +29,7 @@
     "express-session": "^1.18.1",
     "googleapis": "^148.0.0",
     "jsonwebtoken": "^9.0.2",
+    "langchain": "^0.3.34",
     "prisma": "^6.9.0",
     "zod": "^3.25.75"
   }

@@ -1,6 +1,16 @@
 import { InferenceClient } from "@huggingface/inference";
 import type { contextType, GlobalUserType } from "../../types";
+import { ChatOpenAI } from "@langchain/openai";
 export const GlobalUser: GlobalUserType = {};
+
+
+const llm = new ChatOpenAI(
+  {
+    model:"gpt-4.1",
+    apiKey:process.env.OPENAI_API_KEY,
+  }
+)
+
 
 const client = new InferenceClient(process.env.HF_TOKEN);
 
@@ -69,19 +79,30 @@ export const generateReply = async (context: contextType) => {
   `;
 
   try {
-    const chatCompletion = await client.chatCompletion({
-      model: "deepseek-ai/DeepSeek-V3",
-      provider: "auto",
-      messages: [
-        {
-          role: "system",
-          content: SYSTEM_PROMPT,
-        },
-      ],
-      temperature: 0.7,
-    });
 
-        let rawResponse = chatCompletion.choices[0]?.message.content ?? "";
+
+
+
+    const messages = [{
+      role:'system',
+      content:SYSTEM_PROMPT
+    }]
+    const completion = await llm.invoke(messages)
+        console.log(completion)
+
+    // const chatCompletion = await client.chatCompletion({
+    //   model: "deepseek-ai/DeepSeek-V3",
+    //   provider: "auto",
+    //   messages: [
+    //     {
+    //       role: "system",
+    //       content: SYSTEM_PROMPT,
+    //     },
+    //   ],
+    //   temperature: 0.7,
+    // });
+
+        let rawResponse = completion.content as string ?? "";
 
 
         rawResponse = rawResponse.trim().replace(/^```(?:json)?|```$/g, "");
@@ -156,22 +177,29 @@ Respond with ONLY the JSON object in this **exact structure**:
 Do NOT wrap the response in triple backticks do NOT add markdown or comments. Return ONLY the JSON object, nothing else.`;
 
   try {
-    const chatCompletion =  await client.chatCompletion({
-        model: "deepseek-ai/DeepSeek-V3",
-        provider: "auto",
-        messages: [
-          {
-            role: "system",
-            content: NEW_MAIL_PROMPT,
-          },
-        ],
-        temperature: 0.7,
-        frequency_penalty:1.0
+    // const chatCompletion =  await client.chatCompletion({
+    //     model: "deepseek-ai/DeepSeek-V3",
+    //     provider: "auto",
+    //     messages: [
+    //       {
+    //         role: "system",
+    //         content: NEW_MAIL_PROMPT,
+    //       },
+    //     ],
+    //     temperature: 0.7,
+    //     frequency_penalty:1.0
         
         
-    })
+    // })
+    const messages = [{
 
-    let rawResponse = chatCompletion.choices[0]?.message.content ?? "";
+      "role":"system",
+      "content":NEW_MAIL_PROMPT
+    }]
+
+    const completion = await llm.invoke(messages)
+
+    let rawResponse = completion.content as string ?? "";
 
 
     rawResponse = rawResponse.trim().replace(/^```(?:json)?|```$/g, "");

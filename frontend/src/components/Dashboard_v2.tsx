@@ -7,7 +7,7 @@ import ReplyBox from "./ReplyBox_v2";
 import MailView from "./MailView_v3";
 import EmptyState from "./EmptyState_v2";
 import { config } from "../config";
-import EmailDetailView from "./EmailDetailView";
+import EmailDetailView from "./EmailDetailView_v2";
 
 export type EmailsType = {
   id: string;
@@ -81,6 +81,9 @@ const Dashboard2 = () => {
       { withCredentials: true }
     );
     console.log(response.data.array)
+    if(!response.data.success && response.data.redirectUrl){
+      window.location.href=response.data.redirectUrl
+    }
     setEmails((prev) => [...prev, ...response.data.array]);
     setLoad(response.data.nextPageToken);
   };
@@ -100,6 +103,10 @@ const Dashboard2 = () => {
       `${config.BACKEND_URL}/api/v1/google/email/${threadId}`,
       { withCredentials: true }
     );
+        console.log(JSON.stringify(response.data.data)+"------")
+    if(!response.data.success && response.data.redirectUrl){
+      window.location.href=response.data.redirectUrl
+    }
     setEmail(response.data.data);
     setselectedMail(true);
     setIsMobileDetailOpen(true);
@@ -124,6 +131,9 @@ const Dashboard2 = () => {
       { email: emailselected },
       { withCredentials: true }
     );
+    if(!response.data.success && response.data.redirectUrl){
+      window.location.href=response.data.redirectUrl
+    }
     setResponse(response.data.reply);
   };
 
@@ -147,7 +157,7 @@ const Dashboard2 = () => {
       ? originalSubject
       : `Re: ${originalSubject}`;
 
-    await axios.post(
+   const {data} = await axios.post(
       `${config.BACKEND_URL}/api/v1/google/email/reply`,
       {
         body,
@@ -159,6 +169,10 @@ const Dashboard2 = () => {
       },
       { withCredentials: true }
     );
+
+    if(!data.success && data.redirectUrl){
+      window.location.href=data.redirectUrl
+    }
   };
 
   const handleNewEmail = async (mail: {
@@ -166,11 +180,14 @@ const Dashboard2 = () => {
     subject: string;
     body: string;
   }) => {
-    await axios.post(
+    const response = await axios.post(
       `${config.BACKEND_URL}/api/v1/google/email/new`,
       { ...mail },
       { withCredentials: true }
     );
+    if(!response.data.success && response.data.redirectUrl){
+      window.location.href=response.data.redirectUrl
+    }
   };
 
   const handleGenerateEmail = async (subject: string, body: string) => {
@@ -179,6 +196,10 @@ const Dashboard2 = () => {
       { subject, body },
       { withCredentials: true }
     );
+
+    if(!response.data.success && response.data.redirectUrl){
+      window.location.href=response.data.redirectUrl
+    }
     setMail((prev) => ({
       ...prev,
       subject: response.data.data.subject ?? prev.subject,
@@ -204,7 +225,7 @@ const Dashboard2 = () => {
       <div
         className={`h-screen w-auto ${
           isCollapsed ? "lg:ml-20" : "lg:ml-64"
-        } flex px-6 py-6 bg-gray-50 text-gray-800 space-x-6`}
+        } flex px-6 py-4 bg-gray-50 text-gray-800 lg:space-x-6`}
       >
         {emails.length > 0 ? (
           <MailView
@@ -219,7 +240,7 @@ const Dashboard2 = () => {
         )}
 
         {/* Right Email Viewer */}
-        <div className="hidden lg:flex flex-1 flex-col relative overflow-hidden">
+        <div className="hidden lg:flex flex-1 flex-col relative overflow-hidden ">
           {selectedMail && email ? (
                            <EmailDetailView email={email} getHeader={getHeader} setReplyTarget={setReplyTarget} replyTarget={replyTarget} response={response} setResponse={setResponse} handleSendReply={handleSendReply} handleGenerateReply={handleGenerateReply} />
 

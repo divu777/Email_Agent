@@ -16,6 +16,9 @@ const Login = () => {
         `${config.BACKEND_URL}/api/v1/google/authorizationUrl`,
         { withCredentials: true }
       );
+      if(!response.data.success && response.data.redirectUrl){
+      window.location.href=response.data.redirectUrl
+    }
       setAuthUrl(response.data);
     } catch (err) {
       setError('Failed to connect to authentication service. Please check your connection and try again.');
