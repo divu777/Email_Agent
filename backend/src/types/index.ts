@@ -1,5 +1,7 @@
-import type { snippets } from '@huggingface/inference';
 import * as z from 'zod/v4';
+import type { BaseMessage } from "@langchain/core/messages";
+
+import {Annotation, type Messages, MessagesAnnotation, messagesStateReducer} from '@langchain/langgraph'
 export const EmailsTypeSchema = z.object({
   id: z.string(),
   labels:z.array(z.string()),
@@ -51,3 +53,13 @@ export type contextType  = z.infer<typeof contextSchema>
 export type GlobalUserType = Record<string,tokens>
 
 export type generateReplySchema  = z.infer<typeof EmailsTypeSchema>
+
+
+export const StateAnnotation = Annotation.Root({
+  user_query: Annotation<string>,
+  // messages2: Annotation<BaseMessage[],Messages>({
+  //   reducer:messagesStateReducer
+  // })
+
+  ...MessagesAnnotation.spec
+})
