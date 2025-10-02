@@ -1,6 +1,6 @@
 import { Star } from "lucide-react";
 import { IoReturnUpBack } from "react-icons/io5";
-import { EmailSummary, EmailType2 } from "./Dashboard_v2";
+import { EmailSummary, EmailType2 } from "../types";
 
 const EmailDetailView = ({
   email,
