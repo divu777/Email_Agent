@@ -8,8 +8,12 @@ const llm = new ChatOpenAI({
 })
 
 
-console.log(JSON.stringify(StateAnnotation)+"==========>")
+//console.log(JSON.stringify(StateAnnotation)+"==========>")
+
 const llmNode = async(state:typeof StateAnnotation.State)=>{
+    console.log(JSON.stringify(state)+"==========>")
+console.log(JSON.stringify(StateAnnotation.State)+"==========>")
+
     const response = await llm.invoke(state.messages)
 
     return {
@@ -17,7 +21,9 @@ const llmNode = async(state:typeof StateAnnotation.State)=>{
     }
 }
 
-const user_query="hello"
+const query_enchancer = async(state:typeof StateAnnotation.State)=>{
+
+}
 
 const graph_builder = new StateGraph(StateAnnotation).addNode("chat_node",llmNode)
 graph_builder.addEdge(START,"chat_node")
@@ -33,15 +39,15 @@ export const graph = graph_builder.compile()
 
 // console.log(response)
 
-for await( const chunk of await graph.stream(
-    {
-    user_query:"hello how are you",
-    messages:[{"role":"user","content":user_query}]
-},{streamMode:'values'}
-)){
-    chunk.messages[chunk.messages.length-1]?.getType()=='ai' ?console.log("yayy"):console.log("nooo")
-        console.log(chunk.messages[chunk.messages.length-1])
+// for await( const chunk of await graph.stream(
+//     {
+//     user_query:"hello how are you",
+//     messages:[{"role":"user","content":user_query}]
+// },{streamMode:'values'}
+// )){
+//     chunk.messages[chunk.messages.length-1]?.getType()=='ai' ?console.log("yayy"):console.log("nooo")
+//         console.log(chunk.messages[chunk.messages.length-1])
 
-    console.log("\n====\n");
+//     console.log("\n====\n");
 
-}
+// }

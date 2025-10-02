@@ -24,7 +24,7 @@ export const authTokenMiddleware = async (
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
-    if (!decoded || !decoded.email) {
+    if (!decoded || !decoded.email || !decoded.id) {
 
       res.json({
         message: "Not valid cookie you trator",
@@ -62,6 +62,7 @@ export const authTokenMiddleware = async (
     }
 
     req.email = decoded.email;
+    req.userId = decoded.id;
     next();
   } catch (error) {
     console.log("Error in the middleware : " + error);

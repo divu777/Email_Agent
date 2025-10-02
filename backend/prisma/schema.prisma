@@ -21,5 +21,28 @@ model User{
   access_token String
   refresh_token String
   expiry_date DateTime
+  chats Chat[]
 }
 
+model Chat{
+  id String @id @default(uuid())
+  name String
+  messages Message[]
+  userId String
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+}
+
+model Message{
+  id String @id @default(uuid())
+  role Roles
+  content String
+  chatId String
+  chat Chat @relation(fields: [chatId],references: [id],onDelete: Cascade)
+}
+
+enum Roles{
+  Human
+  AI
+  System
+  ToolCall
+}

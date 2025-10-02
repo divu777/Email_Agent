@@ -39,7 +39,7 @@ router.get("/callback", async (req, res) => {
     },
   });
 
-  await prisma.user.upsert({
+  const user =await prisma.user.upsert({
     where: {
       email: emailAddress,
     },
@@ -56,7 +56,7 @@ router.get("/callback", async (req, res) => {
     },
   });
 
-  const token = jwt.sign({ email: emailAddress }, config.JWT_SECRET!);
+  const token = jwt.sign({id:user.id, email: emailAddress }, config.JWT_SECRET!);
 
   const isLocalhost = req.hostname === "localhost";
 
