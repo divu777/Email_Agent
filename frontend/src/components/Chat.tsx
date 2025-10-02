@@ -4,11 +4,13 @@ import { useEffect, useRef, useState } from "react"
 import { useSocket } from "../hooks/useSocket"
 import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
+import axios from "axios"
+import { config } from "../config"
 
 
 type Message={
     content:string,
-    type: "human" | "assistant",
+    role: "human" | "ai",
     id: number
 }
 
@@ -22,6 +24,22 @@ const Chat = () => {
 
   const socket = useSocket()
 
+  const getMessages = async()=>{
+     const {data}= await axios.get(`${config.BACKEND_URL}/api/v1/genai/messages`,{
+        withCredentials:true
+      })
+
+      if(!data.success){
+        setChats([])
+        return 
+      }
+      console.log(JSON.stringify(data))
+      setChats(data.messages)
+  }
+
+  useEffect(()=>{
+    getMessages()
+  },[])
 
 
   
@@ -71,7 +89,7 @@ const Chat = () => {
       const messages = chats.map(({id,...rest})=>rest)
       messages.push({
         "content":input,
-        "type":"human"
+        "role":"human"
       })
       console.log(JSON.stringify(messages))
       socket.send(
@@ -84,8 +102,8 @@ const Chat = () => {
 
       setChats((prev) => [
         ...prev,
-        { content: input, id: humanId, type: "human" },
-        { content: "", id: aiId, type: "assistant" }
+        { content: input, id: humanId, role: "human" },
+        { content: "", id: aiId, role: "ai" }
       ])
     }
     setInput("")
@@ -119,20 +137,20 @@ const Chat = () => {
         <AnimatePresence>
           {chats.map((chat) => (
             <motion.div
-              key={chat.id}
+              key={chat.content}
               variants={messageVariants}
               initial="hidden"
               animate="visible"
               exit="exit"
               layout
               className={`flex w-full ${
-                chat.type === "assistant" ? "justify-start" : "justify-end"
+                chat.role === "ai" ? "justify-start" : "justify-end"
               }`}
             >
               <motion.div
                 layout
                 className={`px-4 py-3 rounded-lg shadow-sm max-w-xs text-sm leading-snug ${
-                  chat.type === "assistant"
+                  chat.role === "ai"
                     ? "bg-gray-100 text-gray-800"
                     : "bg-blue-600 text-white"
                 }`}

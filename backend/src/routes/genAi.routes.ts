@@ -52,6 +52,7 @@ router.post("/reply", authTokenMiddleware, async (req, res) => {
 });
 
 import z from 'zod/v4'
+import { prisma } from "../../prisma";
 
 const craftNewReplySchema = z.object({
   subject:z.string().nullable(),
@@ -101,6 +102,48 @@ router.post("/craft",authTokenMiddleware,async(req,res)=>{
     })
 })
 
+
+router.get("/messages",authTokenMiddleware,async(_,res)=>{
+  try {
+
+    const email = _.email
+
+    if(!email){
+      return
+    }
+
+    const user = await prisma.user.findUnique({
+      where:{
+        email
+      },
+      select:{
+        messages:true
+      }
+    })
+
+    if(!user){
+      res.json({
+        message:"Unauthorized user",
+        success:false
+      })
+      return
+    }
+
+    res.json({
+      message:"Fetched user messages successfully.",
+      success:true,
+      messages:user.messages
+    })
+
+    
+  } catch (error) {
+    console.log("Error in getting user messages: "+error);
+    res.json({
+      message:"Error in getting user message",
+      success:false
+    })
+  }
+})
 
 
 export default router;

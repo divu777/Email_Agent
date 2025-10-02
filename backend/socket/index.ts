@@ -1,3 +1,4 @@
+import { prisma } from './../prisma/index';
 import  jwt, { JwtPayload }  from 'jsonwebtoken';
 import { WebSocketServer } from "ws";
 import config from "../src/config";
@@ -25,8 +26,6 @@ function verifyToken(token:string){
     }
   }
 
-
-  return true
 }
 
 
@@ -45,7 +44,7 @@ wss.on("connection", (socket,req) => {
 
         const verifiedToken = verifyToken(ourcookie)
 
-        if(!verifiedToken){
+        if(!verifiedToken.valid){
           socket.send("Unauthorized user, zaada smart mat bnn.")
           return 
         }
@@ -60,6 +59,22 @@ wss.on("connection", (socket,req) => {
     const recievedData = JSON.parse(data);
    
     const messages = recievedData.messages;
+    if(messages.length==0){
+      socket.send('nice try.')
+      return
+    }
+
+    const latestMsg = messages[messages.length-1];
+
+
+    // const message = await prisma.message.create({
+    //   data:{
+    //     userId:verifiedToken.data?.id,
+    //     content:latestMsg.content,
+    //     role:latestMsg.role
+    //   }
+    // })
+
 
     for await (const chunk of await graph.stream(
       {
@@ -72,12 +87,20 @@ wss.on("connection", (socket,req) => {
     )) {
       const lastMsg = chunk.messages[chunk.messages.length - 1];
       console.log(lastMsg.content + "---------->/n");
+      const message = await prisma.message.create({
+        data:{
+          userId:verifiedToken.data?.id,
+          content:lastMsg.content as string,
+          role: lastMsg.getType()=='ai' ? 'ai' : 'human'
+        }
+      })
       if (lastMsg.getType() == "ai") {
+
 
         socket.send(
           JSON.stringify({
             content: lastMsg.content,
-            type: "assistant",
+            role: "assistant",
             id: recievedData.newMsgId,
           })
         );
