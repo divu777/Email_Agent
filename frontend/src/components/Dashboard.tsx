@@ -96,7 +96,7 @@ const Dashboard2 = () => {
       `${config.BACKEND_URL}/api/v1/google/email/${threadId}`,
       { withCredentials: true }
     );
-    console.log(JSON.stringify(response.data.data)+"------")
+    //console.log(JSON.stringify(response.data.data)+"------")
     setEmail(response.data.data);
     setselectedMail(true);
     setResponse("");

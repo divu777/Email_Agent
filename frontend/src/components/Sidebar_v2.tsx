@@ -1,9 +1,8 @@
 import axios from "axios";
 import { motion } from "framer-motion";
-import { Mail, LogOut, Zap, ChevronLeft, ChevronRight } from "lucide-react";
+import { Mail, LogOut, Zap, ChevronLeft, ChevronRight, MessageCircleMore } from "lucide-react";
 import { IoCreateOutline } from "react-icons/io5";
 import { config } from "../config";
-import { useNavigate } from "react-router-dom";
 
 interface SidebarProps {
   setActiveView: (view: string) => void;
@@ -21,6 +20,7 @@ const Sidebar = ({
   const menuItems = [
     { id: "mail", icon: Mail, label: "Mail" },
     { id: "send-mail", icon: IoCreateOutline, label: "Send Email" },
+    {id:"chat",icon: MessageCircleMore,label:"Chat"}
   ];
 
 
