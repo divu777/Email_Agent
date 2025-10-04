@@ -63,7 +63,12 @@ export const StateAnnotation = Annotation.Root({
 
   ...MessagesAnnotation.spec,
   fileName:Annotation<string|null>,
-  related_docs:Annotation<string[]|null>
+  related_docs:Annotation<{
+    pageContent:string,
+    metadata:any,
+    id:string
+  }[]|null>,
+  embeddings_created:Annotation<string[]|null>
 })
 
 export const QueryEnchancerSchema = z.object({

@@ -1,3 +1,4 @@
+import { config } from './../../../../frontend/src/config/index';
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { QueryEnchancerSchema, StateAnnotation } from "../../types/index";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
@@ -11,7 +12,45 @@ import {
 } from "@langchain/core/messages";
 import { getFile } from "../../lib/s3";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
-import z from "zod/v4";
+
+import { Memory } from 'mem0ai/oss';
+
+const config ={
+    "version":"v1.1",
+    "llm":{
+        "provider":"openai",
+        "config":{
+            "model":"gpt-4.1",
+            "api_key":process.env.OPENAI_API_KEY
+        }
+    },
+    "embedder":{
+        "provider":"openai",
+        "config":{
+            "model":"text-embedding-3-small",
+            "api_key":process.env.OPENAI_API_KEY
+        }
+    },
+    "vector_store":{
+        "provider":"qdrant",
+        "config":{
+            "host":"localhost",
+            "port":"6333"
+        }
+    },
+    "graph_store":{
+        "provider":"neo4j",
+        "config":{
+            "url":"bolt://neo4j:7687",
+            "username":"neo4j",
+            "password":"divakar-jaiswal-"
+        }
+    }
+}
+
+const memory = new Memory(config)
+
+
 
 const llm = new ChatOpenAI({
   model: "gpt-4.1",
@@ -24,6 +63,7 @@ const embedder = new OpenAIEmbeddings({
 });
 
 const llmNode = async (state: typeof StateAnnotation.State) => {
+    console.log("llm node")
   const SYSTEM_PROMPT = `
     #IDENTITY
     You are an intelligent email agent chatbot that helps the user with their queries and provides answers to those queries.
@@ -127,6 +167,8 @@ const query_enchancer = async (state: typeof StateAnnotation.State) => {
 
 export const CreateEmbedding = async (state: typeof StateAnnotation.State) => {
   try {
+        console.log("create embedding node")
+
     const buffer = await getFile(state.fileName!);
     const loader = new PDFLoader(new Blob([buffer]), {
       splitPages: true,
@@ -173,6 +215,7 @@ export const CreateEmbedding = async (state: typeof StateAnnotation.State) => {
 export const similarity_search = async (
   state: typeof StateAnnotation.State
 ) => {
+    console.log("similiar node")
   const vector = await QdrantVectorStore.fromExistingCollection(embedder, {
     collectionName: state.fileName!,
     url: "http://localhost:6333",
@@ -180,13 +223,39 @@ export const similarity_search = async (
 
   const similar_docs = await vector.similaritySearch(state.user_query);
 
+  //console.log(JSON.stringify(similar_docs)+"==========>")
+
   return {
     related_docs: similar_docs,
   };
 };
 
 export const rag_llm = async(state:typeof StateAnnotation.State)=>{
+      console.log(JSON.stringify(state)+"==========>")
 
+    const related_docs = state.related_docs!
+    let content = ''
+    for (let docs of related_docs){
+        content+= `Page Content: ${docs.pageContent}`
+    }
+
+    const System_prompt = `
+    #GOAL
+    You are intelligent Email AI agent which would help user with his or her queries based on the Context provided to you.
+
+    #INSTRUCTIONS
+    1) Always go through the context provided to you, before generating a response for the user query.
+    2) Provide only queries related to that context. If asked something not from the context Reply with "Sorry i can't help you with this query based on the context provided to me".Use different variations of this sentence so it doesn't feel generic.
+    
+    #CONTEXT
+    ${content}
+    `
+
+    const response =await llm.invoke([new SystemMessage(System_prompt),...state.messages])
+
+    return {
+        "messages":[response]
+    }
 }
 
 
@@ -196,6 +265,8 @@ export const deleteCollection = async (filename: string) => {
 };
 
 export const router_node = async (state: typeof StateAnnotation.State) => {
+    console.log("router node")
+    console.log(JSON.stringify(state))
     const collectionName = state.fileName
     if(collectionName){
         return "create_embedding"

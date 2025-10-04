@@ -107,7 +107,9 @@ const [uploading, setUploading] = useState(false)
         JSON.stringify(
           {
             messages,
-            newMsgId:aiId          }
+            newMsgId:aiId,
+          fileName:filenameRef.current? filenameRef.current : null   
+               }
         )
       )
 
@@ -239,7 +241,7 @@ const [uploading, setUploading] = useState(false)
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          className="flex-1 pl-4 pr-4 py-2 bg-transparent text-gray-800 focus:outline-none"
+          className="flex-1 pl-4 pr-10 py-2 bg-transparent text-gray-800 focus:outline-none"
         />
           {file && (
     <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center space-x-2 bg-gray-100 px-2 py-1 rounded">
