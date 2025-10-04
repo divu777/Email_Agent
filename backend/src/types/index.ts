@@ -61,5 +61,13 @@ export const StateAnnotation = Annotation.Root({
   //   reducer:messagesStateReducer
   // })
 
-  ...MessagesAnnotation.spec
+  ...MessagesAnnotation.spec,
+  fileName:Annotation<string|null>,
+  related_docs:Annotation<string[]|null>
 })
+
+export const QueryEnchancerSchema = z.object({
+  query_one: z.string(),
+  query_two: z.string(),
+  query_three: z.string(),
+});

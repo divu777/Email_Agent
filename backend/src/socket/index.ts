@@ -1,9 +1,8 @@
-import { prisma } from './../prisma/index';
-import  jwt, { JwtPayload }  from 'jsonwebtoken';
+import { prisma } from '../../prisma/index';
+import  jwt, { type JwtPayload }  from 'jsonwebtoken';
 import { WebSocketServer } from "ws";
-import config from "../src/config";
-import { graph } from "../src/ai/langgraph";
-import { de } from 'zod/v4/locales';
+import config from "../config";
+import { graph } from "../ai/langgraph";
 const wss = new WebSocketServer({
   port: config.WEBSOCKET_PORT,
 });
@@ -59,6 +58,7 @@ wss.on("connection", (socket,req) => {
     const recievedData = JSON.parse(data);
    
     const messages = recievedData.messages;
+    const fileName = recievedData.fileName
     if(messages.length==0){
       socket.send('nice try.')
       return
@@ -80,12 +80,14 @@ wss.on("connection", (socket,req) => {
       {
         user_query: messages[messages.length-1].content,
         messages: messages,
+        fileName : fileName? fileName : null,
+        related_docs:null
       },
       {
         streamMode: "values",
       }
     )) {
-      const lastMsg = chunk.messages[chunk.messages.length - 1];
+      const lastMsg = chunk.messages[chunk.messages.length - 1]!;
       console.log(lastMsg.content + "---------->/n");
       const message = await prisma.message.create({
         data:{

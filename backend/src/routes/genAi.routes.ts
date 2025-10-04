@@ -51,8 +51,9 @@ router.post("/reply", authTokenMiddleware, async (req, res) => {
   }
 });
 
-import z from 'zod/v4'
+import z, { success } from 'zod/v4'
 import { prisma } from "../../prisma";
+import { deleteFile, generatePreSignedURL } from "../lib/s3";
 
 const craftNewReplySchema = z.object({
   subject:z.string().nullable(),
@@ -140,6 +141,68 @@ router.get("/messages",authTokenMiddleware,async(_,res)=>{
     console.log("Error in getting user messages: "+error);
     res.json({
       message:"Error in getting user message",
+      success:false
+    })
+  }
+})
+
+router.post("/presignedUrl",authTokenMiddleware,async(_,res)=>{
+  try {
+    const { filename,contentType} = _.body
+
+    console.log(JSON.stringify(_.body)+"============>>>>")
+
+    const url = await generatePreSignedURL(filename,contentType)
+
+    if(!url){
+      res.json({
+        message:"Error in getting Presigned Url",
+        success:false
+      })
+      return
+    }
+    
+    res.json({
+      message:"Fetched presigned Url",
+      success:true,
+      url
+    })
+  } catch (error) {
+    console.log("Error in getting presigned Url: "+error);
+    res.json({
+      message:'Error in getting presigned Url.',
+      success:false
+    })
+  }
+})
+
+router.delete("/deleteFile/:fileName",authTokenMiddleware,async(req,res)=>{
+  try {
+    const {fileName} = req.params
+
+    if(!fileName){
+      return
+    }
+
+    const deleted = await deleteFile(fileName);
+
+    if(!deleted){
+      res.json({
+        message:"Error in deleting file",
+        success:false
+      })
+      return
+    }
+
+    res.json({
+      message:"Deleted successfully",
+      success:true
+    })
+    
+  } catch (error) {
+    console.log("Error in delete the file: "+error);
+    res.json({
+      message:"Error in delete the file",
       success:false
     })
   }

@@ -17,6 +17,9 @@ type Message={
 
 
 const Chat = () => {
+    const [file, setFile] = useState(null);
+const [uploading, setUploading] = useState(false)
+
   const [chats, setChats] = useState<Message[]>([])
   const [input, setInput] = useState("")
     const fileInputRef = useRef<HTMLInputElement | null>(null)
@@ -33,10 +36,18 @@ const Chat = () => {
         setChats([])
         return 
       }
-      console.log(JSON.stringify(data))
+      //console.log(JSON.stringify(data))
       setChats(data.messages)
   }
 
+  const removeFile = async() => {
+    // axios request to run a cron job to remove that file from S3 and the chunk embeddings 
+    await axios.delete(`${config.BACKEND_URL}/api/v1/genai/deleteFile/${filenameRef.current}`,{
+      withCredentials:true
+    })
+  setFile(null)
+  filenameRef.current = null
+}
   useEffect(()=>{
     getMessages()
   },[])
@@ -125,6 +136,40 @@ const Chat = () => {
     }
   }, [socket])
 
+  const filenameRef = useRef<String>(null)
+
+  const getPresignedUrl = async(fileName:string,contentType:string):Promise<string>=>{
+    const {data} = await axios.post(`${config.BACKEND_URL}/api/v1/genai/presignedUrl`,{
+      filename:fileName,
+      contentType
+    },{
+      withCredentials:true
+    })
+
+    return data.url
+  }
+
+    const handleFileChange = async(e:React.ChangeEvent<any>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      const file = e.target.files[0];
+      setFile(file); 
+      const uniqueKey = `${Date.now()}_${file.name}`;
+
+      const url = await getPresignedUrl(uniqueKey,file.type)
+      console.log(JSON.stringify(url)+"========> URL")
+      await axios.put(url,file,{
+        headers:{
+          'Content-Type':file.type
+        }
+      })
+
+      filenameRef.current=uniqueKey;
+      console.log(filenameRef)
+            console.log(JSON.stringify(filenameRef))
+
+    } 
+  };
+
   return (
     <motion.div
       className="h-full w-full bg-white flex flex-col p-6 space-y-6 rounded-lg border border-gray-200 shadow-sm"
@@ -188,19 +233,26 @@ const Chat = () => {
         animate="visible"
         className="relative flex items-center bg-gray-50 border border-gray-300 rounded-lg shadow-sm px-3 py-2"
       >
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
         <input
           type="text"
           placeholder="Type a message..."
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          className="flex-1 pl-10 pr-10 py-2 bg-transparent text-gray-800 focus:outline-none"
+          className="flex-1 pl-4 pr-4 py-2 bg-transparent text-gray-800 focus:outline-none"
         />
+          {file && (
+    <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center space-x-2 bg-gray-100 px-2 py-1 rounded">
+      <span className="text-sm text-gray-700">{file.name}</span>
+      <button onClick={removeFile} className="text-gray-500 hover:text-gray-700 font-bold">
+        ×
+      </button>
+    </div>
+  )}
         <input
           type="file"
                     ref={fileInputRef}
-
+        onChange={handleFileChange}
           className="hidden"
         />
 
