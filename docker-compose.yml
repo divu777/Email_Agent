@@ -20,6 +20,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      qdrant:
+        condition: service_healthy
     env_file:
       - ./backend/.env
     ports:
@@ -36,10 +38,19 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=mysupersecretpassword
     healthcheck:                      
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD", "wget", "--spider", "-q", "http://localhost:6333/healthz"]
       interval: 5s
-      retries: 5
       timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  qdrant:
+    image: qdrant/qdrant
+    volumes:
+      - "qdrant_data:/qdrant/storage"
+    environment:
+      - QDRANT_API_KEY=http://localhost:6333
+    healthcheck:
 
 volumes:
   postgres_data:

@@ -1,4 +1,3 @@
-import { config } from './../../../../frontend/src/config/index';
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { QueryEnchancerSchema, StateAnnotation } from "../../types/index";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
@@ -231,12 +230,12 @@ export const similarity_search = async (
 };
 
 export const rag_llm = async(state:typeof StateAnnotation.State)=>{
-      console.log(JSON.stringify(state)+"==========>")
+     // console.log(JSON.stringify(state)+"==========>")
 
     const related_docs = state.related_docs!
     let content = ''
     for (let docs of related_docs){
-        content+= `Page Content: ${docs.pageContent}`
+        content+= `Page Content: ${docs.pageContent}\n\n`
     }
 
     const System_prompt = `
@@ -274,6 +273,10 @@ export const router_node = async (state: typeof StateAnnotation.State) => {
         return "chat_node"
     }
 };
+
+export const router_rag_node = async (state:typeof StateAnnotation.State)=>{
+    const 
+}
 
 
 
