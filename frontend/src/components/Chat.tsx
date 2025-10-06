@@ -1,4 +1,4 @@
-import { MessageSquare, Search, Send, Upload } from "lucide-react"
+import { File, MessageSquare, Send, Upload } from "lucide-react"
 import { motion, AnimatePresence } from "framer-motion"
 import { useEffect, useRef, useState } from "react"
 import { useSocket } from "../hooks/useSocket"
@@ -17,8 +17,7 @@ type Message={
 
 
 const Chat = () => {
-    const [file, setFile] = useState(null);
-const [uploading, setUploading] = useState(false)
+    const [file, setFile] = useState<HTMLInputElement|null>(null);
 
   const [chats, setChats] = useState<Message[]>([])
   const [input, setInput] = useState("")
@@ -40,16 +39,26 @@ const [uploading, setUploading] = useState(false)
       setChats(data.messages)
   }
 
-  const removeFile = async() => {
+  const removeFile = async(change:boolean) => {
     // axios request to run a cron job to remove that file from S3 and the chunk embeddings 
     await axios.delete(`${config.BACKEND_URL}/api/v1/genai/deleteFile/${filenameRef.current}`,{
       withCredentials:true
     })
-  setFile(null)
-  filenameRef.current = null
+    if(!change){
+
+      setFile(null)
+      filenameRef.current = null
+    }
 }
   useEffect(()=>{
     getMessages()
+
+    return ()=>{
+      if(filenameRef.current){
+        removeFile(false)
+        
+      }
+    }
   },[])
 
 
@@ -152,6 +161,9 @@ const [uploading, setUploading] = useState(false)
   }
 
     const handleFileChange = async(e:React.ChangeEvent<any>) => {
+      if(filenameRef.current){
+        removeFile(true)
+      }
     if (e.target.files && e.target.files.length > 0) {
       const file = e.target.files[0];
       setFile(file); 
@@ -228,6 +240,15 @@ const [uploading, setUploading] = useState(false)
   </motion.div>
 )}
 
+         {file && (
+  <div className="mb-2 flex items-center space-x-2 bg-gray-100 px-3 py-1 rounded w-fit">
+        <File className="w-4 h-4 text-gray-600" />
+      <span className="text-sm text-gray-700">{file.name}</span>
+      <button onClick={()=>removeFile(false)} className="text-gray-500 hover:text-gray-700 font-bold">
+        ×
+      </button>
+    </div>
+  )}
       {/* Input Area */}
       <motion.div
         variants={inputVariants}
@@ -241,22 +262,10 @@ const [uploading, setUploading] = useState(false)
           value={input}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          className="flex-1 pl-4 pr-10 py-2 bg-transparent text-gray-800 focus:outline-none"
+          className="flex-1 pl-4 pr-20 py-2 bg-transparent text-gray-800 focus:outline-none"
         />
-          {file && (
-    <div className="absolute left-2 top-1/2 -translate-y-1/2 flex items-center space-x-2 bg-gray-100 px-2 py-1 rounded">
-      <span className="text-sm text-gray-700">{file.name}</span>
-      <button onClick={removeFile} className="text-gray-500 hover:text-gray-700 font-bold">
-        ×
-      </button>
-    </div>
-  )}
-        <input
-          type="file"
-                    ref={fileInputRef}
-        onChange={handleFileChange}
-          className="hidden"
-        />
+ 
+       
 
          <motion.button
           whileTap={{ scale: 0.9 }}
@@ -274,6 +283,12 @@ const [uploading, setUploading] = useState(false)
         >
           <Send className="w-4 h-4 text-white" />
         </motion.button>
+         <input
+          type="file"
+                    ref={fileInputRef}
+        onChange={handleFileChange}
+          className="hidden"
+        />
       </motion.div>
     </motion.div>
   )

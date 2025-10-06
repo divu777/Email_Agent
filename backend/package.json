@@ -9,7 +9,8 @@
   },
   "scripts": {
     "start": "bun src/index.ts",
-    "dev": "bun run start"
+    "dev": "bun run start",
+    "socket" : "bun src/socket/index.ts"
   },
   "peerDependencies": {
     "typescript": "^5"

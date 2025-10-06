@@ -4,52 +4,46 @@ import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
 import { END, START, StateGraph } from "@langchain/langgraph";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { QdrantClient } from "@qdrant/js-client-rest";
-import {
-  AIMessage,
-  HumanMessage,
-  SystemMessage,
-} from "@langchain/core/messages";
+import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getFile } from "../../lib/s3";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
-import { Memory } from 'mem0ai/oss';
+import { Memory } from "mem0ai/oss";
 
-const config ={
-    "version":"v1.1",
-    "llm":{
-        "provider":"openai",
-        "config":{
-            "model":"gpt-4.1",
-            "api_key":process.env.OPENAI_API_KEY
-        }
+const config = {
+  version: "v1.1",
+  llm: {
+    provider: "openai",
+    config: {
+      model: "gpt-4.1",
+      api_key: process.env.OPENAI_API_KEY,
     },
-    "embedder":{
-        "provider":"openai",
-        "config":{
-            "model":"text-embedding-3-small",
-            "api_key":process.env.OPENAI_API_KEY
-        }
+  },
+  embedder: {
+    provider: "openai",
+    config: {
+      model: "text-embedding-3-small",
+      api_key: process.env.OPENAI_API_KEY,
     },
-    "vector_store":{
-        "provider":"qdrant",
-        "config":{
-            "host":"localhost",
-            "port":"6333"
-        }
+  },
+  vector_store: {
+    provider: "qdrant",
+    config: {
+      host: "localhost",
+      port: "6333",
     },
-    "graph_store":{
-        "provider":"neo4j",
-        "config":{
-            "url":"bolt://neo4j:7687",
-            "username":"neo4j",
-            "password":"divakar-jaiswal-"
-        }
-    }
-}
+  },
+  graph_store: {
+    provider: "neo4j",
+    config: {
+      url: "bolt://neo4j:7687",
+      username: "neo4j",
+      password: "divakar-jaiswal-",
+    },
+  },
+};
 
-const memory = new Memory(config)
-
-
+// const memory = new Memory(config);
 
 const llm = new ChatOpenAI({
   model: "gpt-4.1",
@@ -61,8 +55,10 @@ const embedder = new OpenAIEmbeddings({
   apiKey: process.env.OPENAI_API_KEY,
 });
 
+const qdrant = new QdrantClient({ url: process.env.QDRANT_URL });
+
 const llmNode = async (state: typeof StateAnnotation.State) => {
-    console.log("llm node")
+  //console.log("llm node")
   const SYSTEM_PROMPT = `
     #IDENTITY
     You are an intelligent email agent chatbot that helps the user with their queries and provides answers to those queries.
@@ -119,9 +115,6 @@ const llmNode = async (state: typeof StateAnnotation.State) => {
   };
 };
 
-
-
-
 const query_enchancer = async (state: typeof StateAnnotation.State) => {
   const query_llm = new ChatOpenAI({
     model: "gpt-4o-mini",
@@ -153,7 +146,7 @@ const query_enchancer = async (state: typeof StateAnnotation.State) => {
     new SystemMessage(System_Prompt),
     new HumanMessage(state.user_query),
   ]);
-  console.log(JSON.stringify(response));
+  // console.log(JSON.stringify(response));
 
   return {
     query_one: response.query_one,
@@ -162,50 +155,49 @@ const query_enchancer = async (state: typeof StateAnnotation.State) => {
   };
 };
 
-
-
 export const CreateEmbedding = async (state: typeof StateAnnotation.State) => {
   try {
-        console.log("create embedding node")
+    // console.log("create embedding node")
 
     const buffer = await getFile(state.fileName!);
-    const loader = new PDFLoader(new Blob([buffer]), {
+    const loader = new PDFLoader(new Blob([buffer as Buffer]), {
       splitPages: true,
     });
-  
+
     const docs = await loader.load();
-  
+
     const text_splitter = new RecursiveCharacterTextSplitter({
       chunkSize: 1000,
       chunkOverlap: 200,
     });
-  
+
     const split_docs = await text_splitter.splitDocuments(docs);
-  
+
     if (split_docs.length === 0) {
       console.log("No documents were split. Skipping vector store creation.");
       return;
     }
-  
+
     console.log(`Total documents to embed and upload: ${split_docs.length}`);
-  
+
     const vectorStore = await QdrantVectorStore.fromDocuments(
       split_docs,
       embedder,
       {
+        client: qdrant,
         collectionName: state.fileName!,
-        url: "http://localhost:6333",
+        url: process.env.QDRANT_URL,
       }
     );
-  
+
     return {
       embeddings_created: true,
     };
   } catch (error) {
-    console.log("Error in creating embeddings: "+error);
-    return{
-        embeddings_created:false
-    }
+    console.log("Error in creating embeddings: " + error);
+    return {
+      embeddings_created: false,
+    };
   }
 
   // console.log(docs[0])
@@ -214,10 +206,10 @@ export const CreateEmbedding = async (state: typeof StateAnnotation.State) => {
 export const similarity_search = async (
   state: typeof StateAnnotation.State
 ) => {
-    console.log("similiar node")
+  // console.log("similiar node")
   const vector = await QdrantVectorStore.fromExistingCollection(embedder, {
     collectionName: state.fileName!,
-    url: "http://localhost:6333",
+    url: process.env.QDRANT_URL!,
   });
 
   const similar_docs = await vector.similaritySearch(state.user_query);
@@ -229,16 +221,16 @@ export const similarity_search = async (
   };
 };
 
-export const rag_llm = async(state:typeof StateAnnotation.State)=>{
-     // console.log(JSON.stringify(state)+"==========>")
+export const rag_llm = async (state: typeof StateAnnotation.State) => {
+  // console.log(JSON.stringify(state)+"==========>")
 
-    const related_docs = state.related_docs!
-    let content = ''
-    for (let docs of related_docs){
-        content+= `Page Content: ${docs.pageContent}\n\n`
-    }
+  const related_docs = state.related_docs!;
+  let content = "";
+  for (let docs of related_docs) {
+    content += `Page Content: ${docs.pageContent}\n\n`;
+  }
 
-    const System_prompt = `
+  const System_prompt = `
     #GOAL
     You are intelligent Email AI agent which would help user with his or her queries based on the Context provided to you.
 
@@ -248,49 +240,62 @@ export const rag_llm = async(state:typeof StateAnnotation.State)=>{
     
     #CONTEXT
     ${content}
-    `
+    `;
 
-    const response =await llm.invoke([new SystemMessage(System_prompt),...state.messages])
+  const response = await llm.invoke([
+    new SystemMessage(System_prompt),
+    ...state.messages,
+  ]);
 
-    return {
-        "messages":[response]
-    }
-}
-
+  return {
+    messages: [response],
+  };
+};
 
 export const deleteCollection = async (filename: string) => {
-  const client = new QdrantClient({ url: "http://localhost:6333" });
-  const res = await client.deleteCollection(filename);
+  const res = await qdrant.deleteCollection(filename);
+
+  if (res) {
+    return true;
+  }
+  return false;
 };
 
 export const router_node = async (state: typeof StateAnnotation.State) => {
-    console.log("router node")
-    console.log(JSON.stringify(state))
-    const collectionName = state.fileName
-    if(collectionName){
-        return "create_embedding"
-    }else{
-        return "chat_node"
-    }
+  //console.log("router node")
+  //console.log(JSON.stringify(state))
+  const collectionName = state.fileName;
+  if (collectionName) {
+    return "create_embedding";
+  } else {
+    return "chat_node";
+  }
 };
 
-export const router_rag_node = async (state:typeof StateAnnotation.State)=>{
-    const 
-}
+export const cleanup_node = async (state: typeof StateAnnotation.State) => {
+  const fileName = state.fileName!;
 
+  const response = await deleteCollection(fileName);
 
+  if (!response) {
+    console.log("Error in cleaning up the embeddings");
+  }
 
-const graph_builder = new StateGraph(StateAnnotation).addNode(
-  "chat_node",
-  llmNode
-).addNode("create_embedding",CreateEmbedding).addNode('similarity_search',similarity_search).addNode('rag_llm',rag_llm);
+  return null;
+};
+
+const graph_builder = new StateGraph(StateAnnotation)
+  .addNode("chat_node", llmNode)
+  .addNode("create_embedding", CreateEmbedding)
+  .addNode("similarity_search", similarity_search)
+  .addNode("rag_llm", rag_llm)
+  .addNode("cleanup_node", cleanup_node);
 
 graph_builder.addConditionalEdges(START, router_node);
-graph_builder.addEdge('create_embedding','similarity_search')
-graph_builder.addEdge('similarity_search','rag_llm')
-graph_builder.addEdge('rag_llm',END)
+graph_builder.addEdge("create_embedding", "similarity_search");
+graph_builder.addEdge("similarity_search", "rag_llm");
+graph_builder.addEdge("rag_llm", "cleanup_node");
+graph_builder.addEdge("cleanup_node", END);
 graph_builder.addEdge("chat_node", END);
 
 export const graph = graph_builder.compile();
-
-

@@ -27,6 +27,25 @@ services:
     ports:
       - "8081:8080"
 
+  web-socket:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.prod
+    
+    depends_on:
+      qdrant:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    
+    command: ["sh", "-c","bun run socket"]
+
+    env_file:
+      - ./backend/.env
+    ports:
+      - "4000:4000"
+    
+
   postgres:
     image: postgres:alpine
     volumes:
@@ -38,19 +57,26 @@ services:
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=mysupersecretpassword
     healthcheck:                      
-      test: ["CMD", "wget", "--spider", "-q", "http://localhost:6333/healthz"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
-      timeout: 5s
       retries: 5
-      start_period: 10s
+      timeout: 5s
 
   qdrant:
     image: qdrant/qdrant
     volumes:
       - "qdrant_data:/qdrant/storage"
     environment:
-      - QDRANT_API_KEY=http://localhost:6333
-    healthcheck:
+      - QDRANT_URL=http://localhost:6333
+    ports:
+      - "6333:6333"
+    healthcheck:                      
+      test: ["CMD-SHELL", "timeout 1 bash -c '</dev/tcp/localhost/6333' || exit 1"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
 
 volumes:
   postgres_data:
+  qdrant_data:

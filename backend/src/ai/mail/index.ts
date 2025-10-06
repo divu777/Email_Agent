@@ -88,7 +88,7 @@ export const generateReply = async (context: contextType) => {
       content:SYSTEM_PROMPT
     }]
     const completion = await llm.invoke(messages)
-        console.log(completion)
+       // console.log(completion)
 
     // const chatCompletion = await client.chatCompletion({
     //   model: "deepseek-ai/DeepSeek-V3",
