@@ -43,7 +43,7 @@ services:
     env_file:
       - ./backend/.env
     ports:
-      - "4000:4000"
+      - "4001:4000"
     
 
   postgres:
