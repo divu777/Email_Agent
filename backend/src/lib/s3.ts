@@ -61,7 +61,7 @@ export const deleteFile = async(fileName:string)=>{
     })
 
     const data= await s3client.send(command)
-    console.log(JSON.stringify(data)+"--------------deleted")
+   // console.log(JSON.stringify(data)+"--------------deleted")
     return data ? true : false
 }
 

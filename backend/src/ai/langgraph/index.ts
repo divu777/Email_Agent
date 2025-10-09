@@ -178,7 +178,7 @@ export const CreateEmbedding = async (state: typeof StateAnnotation.State) => {
       return;
     }
 
-    console.log(`Total documents to embed and upload: ${split_docs.length}`);
+    //console.log(`Total documents to embed and upload: ${split_docs.length}`);
 
     const vectorStore = await QdrantVectorStore.fromDocuments(
       split_docs,

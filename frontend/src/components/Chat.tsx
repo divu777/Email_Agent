@@ -111,7 +111,7 @@ const Chat = () => {
         "content":input,
         "role":"human"
       })
-      console.log(JSON.stringify(messages))
+     // console.log(JSON.stringify(messages))
       socket.send(
         JSON.stringify(
           {
@@ -170,7 +170,7 @@ const Chat = () => {
       const uniqueKey = `${Date.now()}_${file.name}`;
 
       const url = await getPresignedUrl(uniqueKey,file.type)
-      console.log(JSON.stringify(url)+"========> URL")
+      //JSON.stringify(url)+"========> URL")
       await axios.put(url,file,{
         headers:{
           'Content-Type':file.type
@@ -178,8 +178,8 @@ const Chat = () => {
       })
 
       filenameRef.current=uniqueKey;
-      console.log(filenameRef)
-            console.log(JSON.stringify(filenameRef))
+     // console.log(filenameRef)
+            //console.log(JSON.stringify(filenameRef))
 
     } 
   };

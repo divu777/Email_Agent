@@ -150,7 +150,7 @@ router.post("/presignedUrl",authTokenMiddleware,async(_,res)=>{
   try {
     const { filename,contentType} = _.body
 
-    console.log(JSON.stringify(_.body)+"============>>>>")
+   // console.log(JSON.stringify(_.body)+"============>>>>")
 
     const url = await generatePreSignedURL(filename,contentType)
 
