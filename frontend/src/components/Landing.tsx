@@ -1,9 +1,9 @@
-import Navbar from "./components/Navbar";
+import Navbar from "./Navbar";
 
-import Hero from "./components/Hero";
-import Footer from "./components/Footer";
-import FeatureShowcase from "./components/Feature";
-import NewsCarousel from "./components/NewsCarousel";
+import Hero from "./Hero";
+import Footer from "./Footer";
+import FeatureShowcase from "./Feature";
+import NewsCarousel from "./NewsCarousel";
 
 function App() {
   return (

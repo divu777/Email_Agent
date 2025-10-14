@@ -115,7 +115,7 @@ const NewsCarousel: React.FC = () => {
 
   return (
     <section
-      className="py-8 md:py-12 lg:py-16"
+      className="py-8 md:py-12 lg:py-16 bg-transparent"
       style={{
         height: "80vh",
         width: "80vw",

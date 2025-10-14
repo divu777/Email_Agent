@@ -3,76 +3,76 @@ import { Feature } from "../types";
 export const featuresData: Feature[] = [
   {
     id: 1,
-    title: "Automated Email Replies",
+    title: "Context-Aware Email Intelligence",
     description:
-      "Take the hassle out of replying to emails with AI-driven automation. This feature integrates DeepSeek and HuggingFace to craft human-like responses. Securely connect your Gmail via OAuth for peace of mind and convenience.",
+      "Your agent doesn’t just reply — it understands. By combining RAG, memory, and reasoning, it crafts human-like, contextually precise responses drawn from past threads, attachments, and your communication style.",
     image:
-      "https://res.cloudinary.com/dwrqohfya/image/upload/v1745180274/2_g5tixn.png",
+      "https://res.cloudinary.com/dwrqohfya/image/upload/v1745180274/1_sc6tue.png",
     details: [
       {
-        title: "Smart Reply Engine",
+        title: "RAG-Powered Understanding",
         content:
-          "Powered by DeepSeek API on HuggingFace Inference, this engine understands context and tone. It crafts accurate, intelligent replies tailored to each email.",
+          "Retrieval-Augmented Generation with Qdrant ensures replies are contextually accurate, grounded in prior conversations, documents, and uploaded files.",
       },
       {
-        title: "Secure OAuth Access",
+        title: "Persistent Conversational Memory",
         content:
-          "Connect your Gmail without sharing passwords. OAuth integration ensures end-to-end encryption and compliance with modern security standards.",
+          "With Mem0 + Neo4j, the agent builds a memory graph — remembering user preferences, tone, and relationships to deliver consistent responses.",
       },
       {
-        title: "Toggle Auto-Reply",
+        title: "Adaptive Tone and Intent",
         content:
-          "Easily switch automated replies on or off from your dashboard. You stay in control at all times with just a single click.",
+          "The agent mirrors your communication tone — professional, casual, or concise — adapting intelligently to the thread’s context.",
       },
     ],
   },
   {
     id: 2,
-    title: "Customizable Prompt Logic",
+    title: "Agentic Workflows & Tool Use",
     description:
-      "Fine-tune how your AI responds by editing the backend prompt logic. Whether it’s tone, language, or structure, you can personalize it to fit your style. This is AI tailored exactly the way you want it.",
+      "Powered by LangChain and LangGraph, the agent reasons like a workflow engine — planning multi-step actions, executing tools, and managing emails on your behalf.",
     image:
-      "https://res.cloudinary.com/dwrqohfya/image/upload/v1745180274/3_ktoxxl.png",
+      "https://res.cloudinary.com/dwrqohfya/image/upload/v1745180274/2_g5tixn.png",
     details: [
       {
-        title: "Edit Prompts Easily",
+        title: "Autonomous Tool Execution",
         content:
-          "Modify the system prompt that defines your AI’s behavior with ease. Whether casual or formal, you set the tone and rules.",
+          "The agent can read emails, summarize threads, or draft replies automatically — deciding which tools to invoke through reasoning.",
       },
       {
-        title: "Real-Time Updates",
+        title: "LangGraph Multi-Node Planning",
         content:
-          "No need to restart or reload — any changes to the prompt logic take effect instantly. It’s fast, seamless, and responsive.",
+          "Each workflow is built as a dynamic graph of reasoning nodes — enabling branching logic, retries, and adaptive behavior.",
       },
       {
-        title: "Version History",
+        title: "Secure Gmail Integration",
         content:
-          "Every change is tracked and saved. Easily revert to a previous version if your latest tweaks don’t hit the mark.",
+          "OAuth-based Gmail access ensures all actions — from reading to sending emails — are fully secure and user-consented.",
       },
     ],
   },
   {
     id: 3,
-    title: "Email Insights & Analytics",
+    title: "Real-Time Collaboration & Control",
     description:
-      "Understand your inbox like never before with advanced analytics. Get visibility into trends, bottlenecks, and agent performance. Actionable insights help you optimize every response.",
+      "Stay in command while your agent works. Chat, guide, and observe every action in real time — from message generation to file processing — all through an interactive dashboard.",
     image:
-      "https://res.cloudinary.com/dwrqohfya/image/upload/v1745180273/1_sc6tue.png",
+      "https://res.cloudinary.com/dwrqohfya/image/upload/v1745180274/3_ktoxxl.png",
     details: [
       {
-        title: "Email Categorization",
+        title: "Chat-Based Control Interface",
         content:
-          "Automatically organize incoming emails into logical categories like support, sales, and spam. It makes browsing and prioritization effortless.",
+          "Talk to your email agent to summarize emails, find conversations, or instruct it to reply — all through a natural language chat.",
       },
       {
-        title: "Response Metrics",
+        title: "Real-Time WebSocket Updates",
         content:
-          "Track performance across key metrics like resolution rate, containment rate, and customer satisfaction. Stay on top of your support game.",
+          "Every event — from mail fetch to AI reply generation — streams instantly to your dashboard for a live, fluid experience.",
       },
       {
-        title: "Improvement Suggestions",
+        title: "File-Aware Context",
         content:
-          "AI analyzes reply effectiveness and suggests ways to improve. Spot inefficiencies and level up your agent’s capabilities.",
+          "Upload PDFs, docs, or images to enrich the agent’s understanding. Files are processed securely and automatically deleted from S3 after use.",
       },
     ],
   },

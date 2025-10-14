@@ -2,7 +2,7 @@ import { motion } from "framer-motion";
 
 const Hero = () => {
   return (
-    <div className="h-auto bg-white flex flex-col justify-center px-6 md:px-12 md:my-32">
+    <div className="h-auto bg-white flex flex-col justify-center px-6 md:px-12 md:py-32">
       {/* Text Section */}
       <motion.div
         className="text-center mb-10"
@@ -18,7 +18,7 @@ const Hero = () => {
           all from a single prompt.
         </h3>
         <div className="mt-8">
-          <button className="bg-black text-white px-8 py-3 rounded-xl font-semibold text-lg hover:bg-gray-900 transition duration-300 shadow-md hover:shadow-lg">
+          <button className="bg-blue-600 text-white px-8 py-3 rounded-xl font-semibold text-lg hover:bg-blue-700 transition duration-300 shadow-md hover:shadow-lg">
             Start Free — No Setup Needed
           </button>
           <p className="mt-2 text-sm text-gray-500">
@@ -38,7 +38,7 @@ const Hero = () => {
           transition={{ duration: 0.7, delay: 0.3 }}
         >
           <img
-            src="https://res.cloudinary.com/dwrqohfya/image/upload/v1745248253/Screenshot_2025-04-21_at_2.17.25_AM_gutx3z_c_pad_w_680_zx3m5z.jpg"
+            src="https://res.cloudinary.com/dwrqohfya/image/upload/v1760365060/45C19AFF-095E-4DA0-AA13-06550ECB5648_g91mdm.png"
             alt="Mobile view"
             className="h-40 md:h-[60vh] shadow-2xl rounded-sm md:rounded-xl"
           />
@@ -52,7 +52,7 @@ const Hero = () => {
           transition={{ duration: 0.7, delay: 0.4 }}
         >
           <img
-            src="https://res.cloudinary.com/dwrqohfya/image/upload/v1745247710/Screenshot_2025-04-21_at_2.06.47_AM_w3p5pc_cegovk.jpg"
+            src="https://res.cloudinary.com/dwrqohfya/image/upload/v1760364276/Screenshot_2025-10-13_at_7.27.16_PM_g1jt5v.png"
             alt="Web view"
             className="h-48 md:h-[75vh] shadow-2xl rounded-sm md:rounded-xl"
           />
