@@ -105,7 +105,7 @@ const Chat = () => {
     if (socket?.readyState === WebSocket.OPEN) {
       const humanId = Date.now();
       const aiId = humanId + 1;
-      if (chats.length >= 10) {
+      if (chats.length >= 19) {
         setError(true);
         setTimeout(() => setError(false), 5000);
 

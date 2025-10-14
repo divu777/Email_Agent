@@ -5,7 +5,7 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import config from "../config";
 import { authTokenMiddleware } from "../middleware";
 import {prisma} from "../../prisma/index"
-import { GlobalUser } from "../ai/mail";
+import { GlobalUser, redisclient } from "../ai/mail";
 import z, { success } from "zod/v4";
 const router = express.Router();
 
@@ -126,7 +126,15 @@ router.get("/authorizationUrl", async(req, res) => {
 
 router.get("/emails/:pageToken", authTokenMiddleware, async(req, res) => {
   try {
-    const token = GlobalUser[req.email!]
+    // const token2 = GlobalUser[req.email!]
+
+    await redisclient.connect()
+    const token = JSON.parse((await redisclient.get(`user:${req.email}:tokens`)) as string)
+
+    // console.log(JSON.stringify(token)+"-----------page token")
+        // console.log(JSON.stringify(token2)+"-----------page token")
+
+
 
     const pageToken = req.params.pageToken
 
@@ -195,7 +203,9 @@ router.get("/email/:threadId",authTokenMiddleware,async(req,res)=>{
       return
     }
 
-    const tokens = GlobalUser[email]
+    // const tokens = GlobalUser[email]
+
+    const tokens = JSON.parse((await redisclient.get(`user:${email}:tokens`))as string)
 
     if(!tokens){
       console.log("no tokens available ");
@@ -258,7 +268,9 @@ router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
 
     validSchema.data
 
-    const tokens = GlobalUser[email]
+    // const tokens = GlobalUser[email]
+        const tokens = JSON.parse((await redisclient.get(`user:${email}:tokens`))as string)
+
 
     const gmail = new GoogleOAuthManager(tokens)
 
@@ -298,7 +310,9 @@ router.post("/email/new",authTokenMiddleware,async(req,res)=>{
     }
 
 
-    const tokens = GlobalUser[email]
+    // const tokens = GlobalUser[email]
+        const tokens = JSON.parse((await redisclient.get(`user:${email}:tokens`))as string)
+
 
     const gmailClnt = new GoogleOAuthManager(tokens);
 

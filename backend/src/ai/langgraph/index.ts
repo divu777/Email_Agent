@@ -1,13 +1,26 @@
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { QueryEnchancerSchema, StateAnnotation } from "../../types/index";
 import { ChatOpenAI, OpenAIEmbeddings } from "@langchain/openai";
-import { END, START, StateGraph } from "@langchain/langgraph";
+import {
+  END,
+  START,
+  StateGraph,
+  type LangGraphRunnableConfig,
+} from "@langchain/langgraph";
 import { QdrantVectorStore } from "@langchain/qdrant";
 import { QdrantClient } from "@qdrant/js-client-rest";
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import { getFile } from "../../lib/s3";
 import { RecursiveCharacterTextSplitter } from "@langchain/textsplitters";
 
+import z from "zod/v4";
+
+export const SendEmailSchema = z.object({
+  body: z.string(),
+  to: z.email(),
+  from: z.email(),
+  subject: z.string(),
+});
 import { Memory } from "mem0ai/oss";
 
 const config = {
@@ -43,12 +56,57 @@ const config = {
   },
 };
 
+import { tool } from "@langchain/core/tools";
+import { GlobalUser, redisclient } from "../mail";
+const sendEmail = tool(
+  async (
+    input: {
+      body: string;
+      to: string;
+      subject: string;
+      from: string;
+    },
+    config: LangGraphRunnableConfig
+  ) => {
+    const tokens = JSON.parse((await redisclient.get(`user:${input.from}:tokens`) as string))
+
+    //console.log(JSON.stringify(tokens)+"-----")
+    try {
+      const googleclient = new GoogleOAuthManager(tokens);
+      console.log(`📧 Sending email from ${input.from} to ${input.to}`);
+
+      await googleclient.sendEmail({ ...input });
+      return { success: true, message: "Mail sent successfully" };
+
+    } catch (error) {
+      console.log("Error in sending in email: " + error);
+      return `Something went wrong while sending the email: ${
+        error instanceof Error ? error.message : String(error)
+      }`;
+    }
+  },
+  {
+    name: "send_email",
+    description:
+      "This tool can be used to send email from user behalf, if provided with body: the content of the email , to:the recipient address, subject: the subject of the email , from: the users email from which mail is sent.",
+    schema: SendEmailSchema,
+  }
+);
+
+import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
+import { GoogleOAuthManager } from "../../google";
+
+const tools = [sendEmail];
+const toolNode = new ToolNode(tools);
+
 // const memory = new Memory(config);
 
 const llm = new ChatOpenAI({
   model: "gpt-4.1",
   apiKey: process.env.OPENAI_API_KEY,
 });
+
+const llm_with_tools = llm.bindTools(tools);
 
 const embedder = new OpenAIEmbeddings({
   model: "text-embedding-3-large",
@@ -58,7 +116,7 @@ const embedder = new OpenAIEmbeddings({
 const qdrant = new QdrantClient({ url: process.env.QDRANT_URL });
 
 const llmNode = async (state: typeof StateAnnotation.State) => {
-  //console.log("llm node")
+//console.log(JSON.stringify(state))
   const SYSTEM_PROMPT = `
     #IDENTITY
     You are an intelligent email agent chatbot that helps the user with their queries and provides answers to those queries.
@@ -83,6 +141,9 @@ const llmNode = async (state: typeof StateAnnotation.State) => {
 
         - Tools available for the user to use.
 
+        - Using tools to send emails
+    - Also the email of user is ${state.user_email}
+
     #EXAMPLES
 
     1. Input: How can I generate a new email using AI?
@@ -105,7 +166,7 @@ const llmNode = async (state: typeof StateAnnotation.State) => {
     
     `;
 
-  const response = await llm.invoke([
+  const response = await llm_with_tools.invoke([
     new SystemMessage(SYSTEM_PROMPT),
     ...state.messages,
   ]);
@@ -242,7 +303,7 @@ export const rag_llm = async (state: typeof StateAnnotation.State) => {
     ${content}
     `;
 
-  const response = await llm.invoke([
+  const response = await llm_with_tools.invoke([
     new SystemMessage(System_prompt),
     ...state.messages,
   ]);
@@ -261,7 +322,9 @@ export const deleteCollection = async (filename: string) => {
   return false;
 };
 
-export const router_node = async (state: typeof StateAnnotation.State) => {
+export const router_node = (
+  state: typeof StateAnnotation.State
+): "create_embedding" | "chat_node" => {
   //console.log("router node")
   //console.log(JSON.stringify(state))
   const collectionName = state.fileName;
@@ -289,13 +352,38 @@ const graph_builder = new StateGraph(StateAnnotation)
   .addNode("create_embedding", CreateEmbedding)
   .addNode("similarity_search", similarity_search)
   .addNode("rag_llm", rag_llm)
-  .addNode("cleanup_node", cleanup_node);
+  .addNode("cleanup_node", cleanup_node)
+  .addNode("tools", toolNode);
 
-graph_builder.addConditionalEdges(START, router_node);
+export const tools_return_router = (state: typeof StateAnnotation.State) => {
+  return state.fileName ? "rag_llm" : "chat_node";
+};
+
+graph_builder.addConditionalEdges(START, router_node, [
+  "create_embedding",
+  "chat_node",
+]);
 graph_builder.addEdge("create_embedding", "similarity_search");
 graph_builder.addEdge("similarity_search", "rag_llm");
+graph_builder.addConditionalEdges("rag_llm", toolsCondition, [
+  "tools",
+  "cleanup_node",
+]);
+graph_builder.addConditionalEdges("chat_node", toolsCondition, ["tools", END]);
+graph_builder.addConditionalEdges("tools", tools_return_router, [
+  "rag_llm",
+  "chat_node",
+]);
+
 graph_builder.addEdge("rag_llm", "cleanup_node");
 graph_builder.addEdge("cleanup_node", END);
 graph_builder.addEdge("chat_node", END);
 
 export const graph = graph_builder.compile();
+
+// const drawableGraph2 = graph.getGraph();
+// const image2 = await drawableGraph2.drawMermaidPng();
+// const arrayBuffer = await image2.arrayBuffer();
+
+// await Bun.write("graph.png", new Uint8Array(arrayBuffer));
+// console.log("✅ Graph image written to graph.png");

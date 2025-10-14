@@ -2,7 +2,10 @@ import { Annotation, MessagesAnnotation } from "@langchain/langgraph";
 import type { contextType, GlobalUserType } from "../../types";
 import { ChatOpenAI } from "@langchain/openai";
 import { content } from "googleapis/build/src/apis/content";
+import { RedisClient } from "bun";
 export const GlobalUser: GlobalUserType = {};
+
+export const redisclient = new RedisClient()
 
 
 const llm = new ChatOpenAI(

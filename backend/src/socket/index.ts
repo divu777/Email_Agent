@@ -42,7 +42,7 @@ async function verifyToken(token:string){
     valid:true,
     data:{
       id:decode.id,
-      email:decode.emai
+      email:decode.email
     }
   }
 
@@ -96,6 +96,8 @@ wss.on("connection", async(socket,req) => {
       }
     })
 
+   // console.log(JSON.stringify(verifiedToken))
+
 
     for await (const chunk of await graph.stream(
       {
@@ -103,7 +105,8 @@ wss.on("connection", async(socket,req) => {
         messages: messages,
         fileName : fileName? fileName : null,
         related_docs:null,
-        embeddings_created:null
+        embeddings_created:null,
+        user_email:verifiedToken.data!.email
       },
       {
         streamMode: "updates",

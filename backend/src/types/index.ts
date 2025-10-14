@@ -68,7 +68,8 @@ export const StateAnnotation = Annotation.Root({
     metadata:any,
     id:string
   }[]|null>,
-  embeddings_created:Annotation<string[]|null>
+  embeddings_created:Annotation<string[]|null>,
+  user_email:Annotation<string>
 })
 
 export const QueryEnchancerSchema = z.object({

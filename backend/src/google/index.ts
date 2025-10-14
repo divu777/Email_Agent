@@ -170,9 +170,11 @@ export class GoogleOAuthManager {
 
   async sendEmail(data: SendMessageType) {
     try {
+     // console.log("here1")
       if(!this.gmail){
         return
       }
+      //console.log("here2")
 
       const emailLines = [ 
        `To: ${data.to}`,
@@ -196,6 +198,7 @@ export class GoogleOAuthManager {
           raw:raw
         }
       });
+      
 
      // console.log("senddd");
     } catch (error) {
