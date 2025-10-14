@@ -2,6 +2,7 @@ import { gmail_v1, google } from "googleapis";
 import config from "../config/index";
 import type { replyType } from "../routes/google.route";
 import z from "zod/v4";
+import { processGmailMessages } from "./convert";
 export class GoogleOAuthManager {
   static SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
@@ -112,7 +113,7 @@ export class GoogleOAuthManager {
         id: messageId,
         format,
       });
-    // console.log(JSON.stringify(emailData)+"------>")
+    //console.log(JSON.stringify(emailData)+"------>")
       const impheaders = emailData.data.payload?.headers?.filter(
         (head) =>
           head.name === "From" ||
@@ -149,6 +150,7 @@ export class GoogleOAuthManager {
       );
 
         delete message.payload;
+
         return {
           id: message.id,
           snippet: message.snippet,

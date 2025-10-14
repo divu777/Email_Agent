@@ -1,6 +1,7 @@
-import { InferenceClient } from "@huggingface/inference";
+import { Annotation, MessagesAnnotation } from "@langchain/langgraph";
 import type { contextType, GlobalUserType } from "../../types";
 import { ChatOpenAI } from "@langchain/openai";
+import { content } from "googleapis/build/src/apis/content";
 export const GlobalUser: GlobalUserType = {};
 
 
@@ -11,8 +12,6 @@ const llm = new ChatOpenAI(
   }
 )
 
-
-const client = new InferenceClient(process.env.HF_TOKEN);
 
 export const generateReply = async (context: contextType) => {
   const SYSTEM_PROMPT = `

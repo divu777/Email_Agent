@@ -1,19 +1,40 @@
-import { prisma } from '../../prisma/index';
 import  jwt, { type JwtPayload }  from 'jsonwebtoken';
 import { WebSocketServer } from "ws";
 import config from "../config";
 import { graph } from "../ai/langgraph";
+import { prisma } from '../../prisma';
 const wss = new WebSocketServer({
   port: config.WEBSOCKET_PORT,
 });
 
-function verifyToken(token:string){
+async function verifyToken(token:string){
   const decode = jwt.verify(token,config.JWT_SECRET!) as JwtPayload
 
   if(!decode || !decode.email || !decode.id){
     console.log("unauthorized token")
     return {
       valid:false,
+    }
+  }
+
+  const messagesExceeded = await prisma.user.findUnique({
+    where:{
+      id:decode.id
+    },
+    select:{
+      messages:true
+    }
+  })
+
+  if(!messagesExceeded){
+    return{
+      valid:false
+    }
+  }
+
+  if(messagesExceeded.messages.length>=20){
+    return{
+      valid:false
     }
   }
 
@@ -29,7 +50,7 @@ function verifyToken(token:string){
 
 
 
-wss.on("connection", (socket,req) => {
+wss.on("connection", async(socket,req) => {
   console.log("connected");
         const cookies = req.headers.cookie; 
 
@@ -41,7 +62,7 @@ wss.on("connection", (socket,req) => {
         }
         const ourcookie = parts.pop()?.split("; ").shift()!
 
-        const verifiedToken = verifyToken(ourcookie)
+        const verifiedToken = await verifyToken(ourcookie)
 
         if(!verifiedToken.valid){
           socket.send("Unauthorized user, zaada smart mat bnn.")
