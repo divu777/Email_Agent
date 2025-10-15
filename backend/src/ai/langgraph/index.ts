@@ -57,7 +57,6 @@ const config = {
 };
 
 import { tool } from "@langchain/core/tools";
-import { GlobalUser, redisclient } from "../mail";
 const sendEmail = tool(
   async (
     input: {
@@ -68,7 +67,8 @@ const sendEmail = tool(
     },
     config: LangGraphRunnableConfig
   ) => {
-    const tokens = JSON.parse((await redisclient.get(`user:${input.from}:tokens`) as string))
+    const redisCLient  = await RedisManager.getInstance()
+    const tokens = await redisCLient.getItems(input.from)
 
     //console.log(JSON.stringify(tokens)+"-----")
     try {
@@ -95,6 +95,7 @@ const sendEmail = tool(
 
 import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { GoogleOAuthManager } from "../../google";
+import { RedisManager } from "../../lib/redis";
 
 const tools = [sendEmail];
 const toolNode = new ToolNode(tools);

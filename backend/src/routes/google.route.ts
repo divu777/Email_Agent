@@ -1,3 +1,4 @@
+import { tokens } from './../types/index';
 import express from "express";
 import { GoogleOAuthManager } from "../google";
 import { randomUUIDv7 } from "bun";
@@ -5,8 +6,8 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import config from "../config";
 import { authTokenMiddleware } from "../middleware";
 import {prisma} from "../../prisma/index"
-import { GlobalUser, redisclient } from "../ai/mail";
 import z, { success } from "zod/v4";
+import { RedisManager } from "../lib/redis";
 const router = express.Router();
 
 router.get("/callback", async (req, res) => {
@@ -127,9 +128,10 @@ router.get("/authorizationUrl", async(req, res) => {
 router.get("/emails/:pageToken", authTokenMiddleware, async(req, res) => {
   try {
     // const token2 = GlobalUser[req.email!]
+    const redisClient = await RedisManager.getInstance()
 
-    await redisclient.connect()
-    const token = JSON.parse((await redisclient.get(`user:${req.email}:tokens`)) as string)
+    const token = await redisClient.getItems(req.email!)
+
 
     // console.log(JSON.stringify(token)+"-----------page token")
         // console.log(JSON.stringify(token2)+"-----------page token")
@@ -204,8 +206,9 @@ router.get("/email/:threadId",authTokenMiddleware,async(req,res)=>{
     }
 
     // const tokens = GlobalUser[email]
+    const redisClient = await RedisManager.getInstance()
+    const tokens = await redisClient.getItems(email)
 
-    const tokens = JSON.parse((await redisclient.get(`user:${email}:tokens`))as string)
 
     if(!tokens){
       console.log("no tokens available ");
@@ -269,7 +272,8 @@ router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
     validSchema.data
 
     // const tokens = GlobalUser[email]
-        const tokens = JSON.parse((await redisclient.get(`user:${email}:tokens`))as string)
+     const redisClient = await RedisManager.getInstance()
+    const tokens = await redisClient.getItems(email)
 
 
     const gmail = new GoogleOAuthManager(tokens)
@@ -311,8 +315,8 @@ router.post("/email/new",authTokenMiddleware,async(req,res)=>{
 
 
     // const tokens = GlobalUser[email]
-        const tokens = JSON.parse((await redisclient.get(`user:${email}:tokens`))as string)
-
+ const redisClient = await RedisManager.getInstance()
+    const tokens = await redisClient.getItems(email)
 
     const gmailClnt = new GoogleOAuthManager(tokens);
 

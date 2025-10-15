@@ -2,8 +2,8 @@ import type { Request, Response, NextFunction } from "express";
 
 import jwt, { type JwtPayload } from "jsonwebtoken";
 import { prisma } from "../../prisma";
-import { GlobalUser, redisclient } from "../ai/mail";
 import config from "../config";
+import { RedisManager } from "../lib/redis";
 
 export const authTokenMiddleware = async (
   req: Request,
@@ -34,7 +34,8 @@ export const authTokenMiddleware = async (
     }
 
     // const userExist = GlobalUser[decoded.email];
-    const userExist = JSON.parse((await redisclient.get(`user:${decoded.email}:tokens`))as string)
+      const redisCLient  = await RedisManager.getInstance()
+    const userExist = await redisCLient.getItems(decoded.email)
 
     // console.log(JSON.stringify(userExist)+"::::::")
         // console.log(JSON.stringify(userExist2)+"::::::")
@@ -65,15 +66,20 @@ export const authTokenMiddleware = async (
       //   refresh_token: user?.refresh_token,
       // };
 
-      await redisclient.connect()
-      await redisclient.set(
-        `user:${user.email}:tokens`,
-        JSON.stringify({
+      await redisCLient.setItems({
           access_token: user.access_token,
           expiry_date: user.expiry_date,
           refresh_token: user.refresh_token,
-        })
-      );
+        },user.email)
+
+      // await redisclient.set(
+      //   `user:${user.email}:tokens`,
+      //   JSON.stringify({
+      //     access_token: user.access_token,
+      //     expiry_date: user.expiry_date,
+      //     refresh_token: user.refresh_token,
+      //   })
+      // );
     }
 
     req.email = decoded.email;
