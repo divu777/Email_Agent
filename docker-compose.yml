@@ -37,6 +37,8 @@ services:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
     
     command: ["sh", "-c","bun run socket"]
 
@@ -76,6 +78,19 @@ services:
       timeout: 5s
       retries: 5
       start_period: 10s
+
+  redis:
+    image: redis:6.2-alpine
+    environment:
+      - REDIS_URL=redis://localhost:6379
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s 
+      timeout: 3s  
+      retries: 5   
+      start_period: 10s 
 
 volumes:
   postgres_data:
