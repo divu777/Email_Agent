@@ -103,7 +103,7 @@ function App() {
                     <Linkedin size={20} className="text-gray-700" />
                   </a>
                   <a
-                    href="https://twitter.com/@chota_don"
+                    href="https://twitter.com/@_chota_don_"
                     target="_blank"
                     rel="noopener noreferrer"
                     className="hover:bg-gray-200 p-2 rounded-full transition-colors"
