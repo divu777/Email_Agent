@@ -315,12 +315,17 @@ export const rag_llm = async (state: typeof StateAnnotation.State) => {
 };
 
 export const deleteCollection = async (filename: string) => {
-  const res = await qdrant.deleteCollection(filename);
-
-  if (res) {
-    return true;
+  try {
+    const res = await qdrant.deleteCollection(filename);
+  
+    if (res) {
+      return true;
+    }
+    return false;
+  } catch (error) {
+    console.log("Error in deleting the collection error: "+error)
+    return false
   }
-  return false;
 };
 
 export const router_node = (
@@ -366,11 +371,8 @@ graph_builder.addConditionalEdges(START, router_node, [
 ]);
 graph_builder.addEdge("create_embedding", "similarity_search");
 graph_builder.addEdge("similarity_search", "rag_llm");
-graph_builder.addConditionalEdges("rag_llm", toolsCondition, [
-  "tools",
-  "cleanup_node",
-]);
-graph_builder.addConditionalEdges("chat_node", toolsCondition, ["tools", END]);
+graph_builder.addConditionalEdges("rag_llm", toolsCondition);
+graph_builder.addConditionalEdges("chat_node", toolsCondition);
 graph_builder.addConditionalEdges("tools", tools_return_router, [
   "rag_llm",
   "chat_node",
