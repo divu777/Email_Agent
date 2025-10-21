@@ -50,7 +50,7 @@ jobs:
           username: ${{ secrets.DO_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
-            cd /Email_Agent
+            cd Email_Agent
             docker compose pull
             docker compose down
             docker compose up -d
