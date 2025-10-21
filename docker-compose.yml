@@ -1,22 +1,15 @@
 version: '3.8'
 
-
 services:
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
+    image: divakar777/email-frontend:latest
     env_file:
       - ./frontend/.env
-      
     ports:
       - "3001:80"
-    
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
 
+  backend:
+    image: divakar777/email-backend:latest
     depends_on:
       postgres:
         condition: service_healthy
@@ -28,10 +21,7 @@ services:
       - "8081:8080"
 
   web-socket:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile.prod
-    
+    image: divakar777/email-websocket:latest
     depends_on:
       qdrant:
         condition: service_healthy
@@ -39,14 +29,11 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-    
     command: ["sh", "-c","bun run socket"]
-
     env_file:
       - ./backend/.env
     ports:
       - "4001:4000"
-    
 
   postgres:
     image: postgres:alpine
@@ -58,7 +45,7 @@ services:
       - POSTGRES_USER=postgres
       - POSTGRES_DB=postgres
       - POSTGRES_PASSWORD=mysupersecretpassword
-    healthcheck:                      
+    healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       retries: 5
@@ -72,7 +59,7 @@ services:
       - QDRANT_URL=http://localhost:6333
     ports:
       - "6333:6333"
-    healthcheck:                      
+    healthcheck:
       test: ["CMD-SHELL", "timeout 1 bash -c '</dev/tcp/localhost/6333' || exit 1"]
       interval: 5s
       timeout: 5s
@@ -81,16 +68,14 @@ services:
 
   redis:
     image: redis:6.2-alpine
-    environment:
-      - REDIS_URL=redis://localhost:6379
     ports:
       - "6380:6379"
     healthcheck:
       test: ["CMD", "redis-cli", "ping"]
-      interval: 5s 
-      timeout: 3s  
-      retries: 5   
-      start_period: 10s 
+      interval: 5s
+      timeout: 3s
+      retries: 5
+      start_period: 10s
 
 volumes:
   postgres_data:
