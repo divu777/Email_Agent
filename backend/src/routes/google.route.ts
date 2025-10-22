@@ -229,9 +229,17 @@ router.get("/email/:threadId",authTokenMiddleware,async(req,res)=>{
     
   } catch (error) {
     console.log("error in getting thread "+error)
+          const isLocalhost = req.hostname === "localhost";
+
+      res.clearCookie('email-agent',{
+            httpOnly:true,
+            secure:!isLocalhost,
+            sameSite:'lax'
+          })
     res.json({
       message:"Error in getting thread "+threadId,
-      success:false
+      success:false,
+      redirectUrl:config.FRONTEND_URL
     })
     return
   }
