@@ -11,8 +11,9 @@ export const authTokenMiddleware = async (
   next: NextFunction
 ) => {
   try {
-
+    console.log("b1")
     const token = req.cookies["email-agent"];
+        console.log("b2")
 
     if (!token) {
 
@@ -21,6 +22,7 @@ export const authTokenMiddleware = async (
         redirectUrl:config.REDIRECT_FRONTEND_URL});
       return;
     }
+    console.log("b3")
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
@@ -32,10 +34,13 @@ export const authTokenMiddleware = async (
       });
       return;
     }
+        console.log("b4")
+
 
     // const userExist = GlobalUser[decoded.email];
       const redisCLient  = await RedisManager.getInstance()
     const userExist = await redisCLient.getItems(decoded.email)
+    console.log("b5")
 
     // console.log(JSON.stringify(userExist)+"::::::")
         // console.log(JSON.stringify(userExist2)+"::::::")
