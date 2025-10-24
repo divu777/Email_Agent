@@ -51,6 +51,6 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd Email_Agent
-            docker compose pull
+            docker compose pull --no-cache
             docker compose down
             docker compose up -d
