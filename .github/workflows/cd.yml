@@ -52,4 +52,4 @@ jobs:
           script: |
             cd Email_Agent
             docker compose down
-docker compose up -d --pull always
+            docker compose up -d --pull always
