@@ -126,16 +126,13 @@ router.get("/authorizationUrl", async(req, res) => {
 
 router.get("/emails/:pageToken", authTokenMiddleware, async(req, res) => {
   try {
-    console.log("1")
     //const token2 = GlobalUser[req.email!]
     const redisClient = await RedisManager.getInstance()
-    console.log("2")
 
     const token = await redisClient.getItems(req.email!)
 
-    console.log("3")
 
-    console.log(JSON.stringify(token)+"-----------page token")
+    //console.log(JSON.stringify(token)+"-----------page token")
         // console.log(JSON.stringify(token2)+"-----------page token")
 
 

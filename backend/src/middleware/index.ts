@@ -4,6 +4,7 @@ import jwt, { type JwtPayload } from "jsonwebtoken";
 import { prisma } from "../../prisma";
 import config from "../config";
 import { RedisManager } from "../lib/redis";
+import { GoogleOAuthManager } from "../google";
 
 export const authTokenMiddleware = async (
   req: Request,
@@ -11,9 +12,7 @@ export const authTokenMiddleware = async (
   next: NextFunction
 ) => {
   try {
-    console.log("b1")
     const token = req.cookies["email-agent"];
-        console.log("b2")
 
     if (!token) {
 
@@ -22,7 +21,6 @@ export const authTokenMiddleware = async (
         redirectUrl:config.REDIRECT_FRONTEND_URL});
       return;
     }
-    console.log("b3")
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
@@ -34,13 +32,11 @@ export const authTokenMiddleware = async (
       });
       return;
     }
-        console.log("b4")
 
 
     // const userExist = GlobalUser[decoded.email];
       const redisCLient  = await RedisManager.getInstance()
     const userExist = await redisCLient.getItems(decoded.email)
-    console.log("b5")
 
     // console.log(JSON.stringify(userExist)+"::::::")
         // console.log(JSON.stringify(userExist2)+"::::::")
@@ -65,26 +61,41 @@ export const authTokenMiddleware = async (
         return;
       }
 
-      // GlobalUser[user.email] = {
-      //   access_token: user?.access_token,
-      //   expiry_date: user.expiry_date,
-      //   refresh_token: user?.refresh_token,
-      // };
+      const expiry = new Date(user.expiry_date).getTime()
+      console.log(expiry+"-----epxirty")
+      const now = Date.now()
+      console.log(now+"------now")
 
-      await redisCLient.setItems({
+      if(now>expiry){
+        console.log("Old tokens in db have expired...");
+        const newTokens=await GoogleOAuthManager.refreshAndPersist({access_token:user.access_token,expiry_date:user.expiry_date,refresh_token:user.refresh_token},decoded.email)
+        if(!newTokens){
+          console.log("Error in getting tokens the refreshed ones")
+            throw new Error("Token refresh failed")
+        }
+        const updateUser = await prisma.user.update({
+          where:{
+            email:decoded.email
+          },
+          data:newTokens
+          
+        })
+
+        await redisCLient.setItems({
+          access_token:newTokens!.access_token,
+          expiry_date:newTokens!.expiry_date,
+          refresh_token:newTokens!.refresh_token
+        },updateUser.email)
+      }else{
+
+        
+        await redisCLient.setItems({
           access_token: user.access_token,
           expiry_date: user.expiry_date,
           refresh_token: user.refresh_token,
         },user.email)
-
-      // await redisclient.set(
-      //   `user:${user.email}:tokens`,
-      //   JSON.stringify({
-      //     access_token: user.access_token,
-      //     expiry_date: user.expiry_date,
-      //     refresh_token: user.refresh_token,
-      //   })
-      // );
+        
+      }
     }
 
     req.email = decoded.email;

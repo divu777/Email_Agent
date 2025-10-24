@@ -33,9 +33,9 @@ export class GoogleOAuthManager {
     const client = GoogleOAuthManager.createOAuthClient();
     client.setCredentials(tokens);
 
-    const token = await client.refreshAccessToken();
+    const response = await client.refreshAccessToken();
 
-    return token;
+    return response;
   }
 
   static getAuthorizationURL(userId: string) {
@@ -89,6 +89,28 @@ export class GoogleOAuthManager {
     // Persist back to Redis
     const redisClient = await RedisManager.getInstance()
     await redisClient.setItems(this.tokens, this.tokens.email)
+  }
+}
+
+static async refreshAndPersist(tokens:any,email:string){
+  try {
+   const client = GoogleOAuthManager.createOAuthClient()
+    client.setCredentials(tokens)
+
+    const { credentials } = await client.refreshAccessToken()
+
+    const updated = {
+      access_token: credentials.access_token!,
+      expiry_date: new Date(credentials.expiry_date!),
+      refresh_token: credentials.refresh_token || tokens.refresh_token
+    }
+
+    return updated
+    
+  } catch (error) {
+    console.log("Error in refreshing old tokens, "+error)
+        throw new Error("Token refresh failed")
+
   }
 }
 
