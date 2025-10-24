@@ -3,6 +3,7 @@ import config from "../config/index";
 import type { replyType } from "../routes/google.route";
 import z from "zod/v4";
 import { processGmailMessages } from "./convert";
+import { RedisManager } from "../lib/redis";
 export class GoogleOAuthManager {
   static SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
@@ -72,6 +73,25 @@ export class GoogleOAuthManager {
       console.log("Error in setting tokens " + error);
     }
   }
+  async ensureValidTokens() {
+  const expiry = this.tokens?.expiry_date ? new Date(this.tokens.expiry_date).getTime() : null
+  const now = Date.now()
+
+  if (!expiry || expiry < now) {
+    console.log("Refreshing expired token...")
+    const refreshed = await GoogleOAuthManager.getNewTokens(this.tokens)
+
+    this.tokens = refreshed.credentials
+    const client = GoogleOAuthManager.createOAuthClient()
+    client.setCredentials(this.tokens)
+    this.gmail = google.gmail({ version: "v1", auth: client })
+
+    // Persist back to Redis
+    const redisClient = await RedisManager.getInstance()
+    await redisClient.setItems(this.tokens, this.tokens.email)
+  }
+}
+
 
   async getUserProfile(gmail?: gmail_v1.Gmail) {
     try {
@@ -92,6 +112,8 @@ export class GoogleOAuthManager {
   ) {
     try {
      // console.log("-------"+token)
+       await this.ensureValidTokens()
+
       const emailThreadIds = await this.gmail!.users.messages.list({
         userId: "me",
         maxResults:20,
