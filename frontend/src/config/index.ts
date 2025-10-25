@@ -3,6 +3,3 @@ export const config={
     PUBLISHABLE_KEY:import.meta.env.VITE_CLERK_PUBLISHABLE_KEY,
     SOCKET_URL:import.meta.env.VITE_SOCKET_URL
 }
-
-
-console.log(JSON.stringify(config)+"----->config")

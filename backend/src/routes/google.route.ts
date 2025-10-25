@@ -70,8 +70,8 @@ router.get("/callback", async (req, res) => {
 });
 
 router.get("/authorizationUrl", async(req, res) => {
+  const isLocalhost = req.hostname === "localhost";
   try {
-      const isLocalhost = req.hostname === "localhost";
 
     const token =  req.cookies["email-agent"]
     if (token) {
@@ -118,9 +118,15 @@ router.get("/authorizationUrl", async(req, res) => {
     return
   } catch (error) {
     console.log("Error in gettting Authorization URl ", error);
+      res.clearCookie('email-agent',{
+          httpOnly:true,
+          secure:!isLocalhost,
+          sameSite:"lax"
+        })
     res.json({
       message: "Error in getting Auth URl",
       success: false,
+      redirectUrl:config.FRONTEND_URL
     });
     return;
   }
