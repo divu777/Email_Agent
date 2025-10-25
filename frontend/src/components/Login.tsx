@@ -20,7 +20,7 @@ const Login = () => {
       window.location.href=response.data.redirectUrl
     }
     console.log(JSON.stringify(response.data)+"-----response")
-      setAuthUrl(response.data);
+      setAuthUrl(response.data.authUrl);
     } catch (err) {
       setError('Failed to connect to authentication service. Please check your connection and try again.');
     } finally {
