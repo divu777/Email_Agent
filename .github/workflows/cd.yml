@@ -26,6 +26,9 @@ jobs:
           file: ./frontend/Dockerfile.prod
           push: true
           tags: divakar777/email-frontend:latest
+          build-args: |
+            VITE_BACKEND_URL=${{ secrets.VITE_BACKEND_URL }}
+            VITE_SOCKET_URL=${{ secrets.VITE_SOCKET_URL }}
 
       - name: Build & Push Backend
         uses: docker/build-push-action@v6
