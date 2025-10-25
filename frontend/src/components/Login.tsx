@@ -19,6 +19,7 @@ const Login = () => {
       if(!response.data.success && response.data.redirectUrl){
       window.location.href=response.data.redirectUrl
     }
+    console.log(JSON.stringify(response.data)+"-----response")
       setAuthUrl(response.data);
     } catch (err) {
       setError('Failed to connect to authentication service. Please check your connection and try again.');

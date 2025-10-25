@@ -103,15 +103,16 @@ router.get("/authorizationUrl", async(req, res) => {
             success:false,
             redirectUrl:config.DASHBOARD_URL})
         }
+        return
 
       }
-      return;
     }
     const randomId = randomUUIDv7();
     const { url, state } = GoogleOAuthManager.getAuthorizationURL(randomId);
     req.session.state = state;
 
     res.send(url);
+    return
   } catch (error) {
     console.log("Error in gettting Authorization URl ", error);
     res.json({
