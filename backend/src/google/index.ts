@@ -117,6 +117,8 @@ static async refreshAndPersist(tokens:any,email:string){
 
   async getUserProfile(gmail?: gmail_v1.Gmail) {
     try {
+             await this.ensureValidTokens()
+
       const userInfo = await this.gmail!.users.getProfile({ userId: "me" });
       return userInfo.data.emailAddress;
     } catch (error) {
@@ -152,6 +154,8 @@ static async refreshAndPersist(tokens:any,email:string){
   // get threads all chats data to show to the user , also can be user to use as context to provide in the prompt
   async getEmailData(messageId: string, format = "metadata") {
     try {
+             await this.ensureValidTokens()
+
       const emailData = await this.gmail!.users.messages.get({
         userId: "me",
         id: messageId,
@@ -174,6 +178,8 @@ static async refreshAndPersist(tokens:any,email:string){
 
   async getfullThreadId(threadId: string, format: string ='full') {
     try {
+             await this.ensureValidTokens()
+
       const { data } = await this.gmail!.users.threads.get({
         userId: "me",
         id: threadId,
@@ -214,6 +220,8 @@ static async refreshAndPersist(tokens:any,email:string){
 
   async sendEmail(data: SendMessageType) {
     try {
+             await this.ensureValidTokens()
+
      // console.log("here1")
       if(!this.gmail){
         return
@@ -254,6 +262,8 @@ static async refreshAndPersist(tokens:any,email:string){
   // you just have to send the references from the last email exchaned in the thread 
   // and the messageId of the last email , both of from headers and PS ; messageid is not the same one you are thinking of 
   async replyToThread(data:replyType){
+           await this.ensureValidTokens()
+
     try {
       const emailLines = [
       `To: ${data.to}`,
