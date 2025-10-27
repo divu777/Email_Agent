@@ -228,6 +228,7 @@ router.get("/email/:threadId",authTokenMiddleware,async(req,res)=>{
     const gmalInstance = new GoogleOAuthManager(tokens)
 
     const data = await gmalInstance.getfullThreadId(threadId,'full')
+    console.log(JSON.stringify(data)+"-----")
 
     res.json({
       message:"data fetched of the email",
