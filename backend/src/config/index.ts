@@ -9,7 +9,10 @@ const config = {
   JWT_SECRET:process.env.JWT_SECRET,
   REDIRECT_FRONTEND_URL : process.env.REDIRECT_FRONTEND_URL ?? "http://localhost:5173/login",
   DASHBOARD_URL:process.env.DASHBOARD_URL ?? "http:localhost:5173/dashboard",
-  WEBSOCKET_PORT: Number(process.env.WEBSOCKET_PORT) ?? 4000
+  WEBSOCKET_PORT: Number(process.env.WEBSOCKET_PORT) ?? 4000,
+  KEY_ID: process.env.KEY_ID ?? "",
+  KEY_SECRET : process.env.KEY_SECRET ?? "",
+  WEBHOOK_SECRET: process.env.WEBHOOK_SECRET ?? ""
 };
 
 export default config;

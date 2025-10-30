@@ -16,12 +16,15 @@ datasource db {
 
 model User{
   id  String @id @default(uuid())
-  name String?  
+  name String?
+  isPremium Boolean @default(false)  
   email String @unique 
   access_token String
   refresh_token String
   expiry_date DateTime
   messages Message[]
+  transactions Transaction[]
+  subscription Subscription? 
 }
 
 // model Chat{
@@ -40,9 +43,47 @@ model Message{
   user User @relation(fields: [userId],references: [id],onDelete: Cascade)
 }
 
+model Transaction{
+  id String @id @default(uuid())
+  amount Int
+  planId String
+  currency String @default("INR")
+  status Status @default(PENDING)
+  razorpayOrderId String @unique
+  razorpayPaymentId String?
+  razorpaySignature String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId String
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model Subscription{
+  id String @id @default(uuid())
+  endDate DateTime?
+  startDate DateTime?
+  status Status @default(PENDING)
+  planId String
+  subscriptionId String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  userId String @unique
+  user User @relation(fields: [userId], references: [id],onDelete: Cascade)
+
+  @@index([userId])
+}
+
 enum Roles{
   human
   ai
   system
   toolcall
+}
+
+enum Status{
+  PENDING
+  SUCCESS
+  FAILED
 }

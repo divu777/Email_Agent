@@ -3,6 +3,7 @@ import cors from 'cors';
 import config from './config';
 import googleRouter from "./routes/google.route"
 import genAiRouter from "./routes/genAi.routes"
+import razorRouter from './routes/rzrpay.route';
 import 'express-session'
 import cookieParser from 'cookie-parser';
 import session from 'express-session';
@@ -31,6 +32,7 @@ app.use(cors({
 
 app.use("/api/v1/google",googleRouter)
 app.use("/api/v1/genai",genAiRouter)
+app.use("/api/v1/billing",razorRouter)
 
 const PORT=config.PORT 
 

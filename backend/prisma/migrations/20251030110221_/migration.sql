@@ -1,0 +1,6 @@
+-- AlterTable
+ALTER TABLE "Subscription" ALTER COLUMN "status" SET DEFAULT 'PENDING',
+ALTER COLUMN "planId" SET DATA TYPE TEXT;
+
+-- AlterTable
+ALTER TABLE "Transaction" ALTER COLUMN "planId" SET DATA TYPE TEXT;
