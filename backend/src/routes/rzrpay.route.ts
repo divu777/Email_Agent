@@ -5,6 +5,8 @@ import { Router } from "express";
 import z from "zod";
 import { prisma } from "../../prisma";
 import crypto from "crypto";
+import { success } from "zod/v4";
+import { datacatalog } from "googleapis/build/src/apis/datacatalog";
 
 const razorClient = new Razorpay({
   key_id: config.KEY_ID,
@@ -20,8 +22,8 @@ const createOrderSchema = z.object({
 
 const planCatalogue = [
   {
-    planId: "plan_RZSWTSOzdYLdHC",
-    amount: 200,
+    planId: "plan_Ra7R2IZuXUnFGD",
+    amount: 10,
     currency: "INR",
   },
 ];
@@ -60,6 +62,7 @@ razorRouter.post("/order/create", authTokenMiddleware, async (req, res) => {
         notes: {
           plan_type: "monthly",
           user_id: userId,
+          app_name: "VEKTOR"
         },
       });
 
@@ -73,18 +76,26 @@ razorRouter.post("/order/create", authTokenMiddleware, async (req, res) => {
         },
       });
 
-      const subscription = await prisma.subscription.create({
-        data: {
-          planId: planDetails.planId,
-          subscriptionId: orderResponse.id,
-          userId,
-        },
-      });
+     const subscription = await prisma.subscription.upsert({
+  where: { userId },
+  update: {
+    planId: planDetails.planId,
+    subscriptionId: orderResponse.id,
+    status: "PENDING",
+    updatedAt: new Date(),
+  },
+  create: {
+    planId: planDetails.planId,
+    subscriptionId: orderResponse.id,
+    userId,
+  },
+});
+
 
       res.json({
         data: {
           keyId: config.KEY_ID,
-          subsriptionId: orderResponse.id,
+          subscriptionId: orderResponse.id,
         },
 
         success: true,
@@ -99,7 +110,7 @@ razorRouter.post("/order/create", authTokenMiddleware, async (req, res) => {
     console.log("one time payment matched");
     return;
   } catch (error) {
-    console.log("Error in creating order, :" + error);
+    console.log("Error in creating order, :" + JSON.stringify(error));
     res.json({
       message: "Error in creating order",
       success: false,
@@ -111,16 +122,18 @@ razorRouter.post("/payment/verify", authTokenMiddleware, async (req, res) => {
   try {
     const userId = req.userId;
 
+    console.log(JSON.stringify(req.body)+"0-----recieved")
+
     if (!userId) {
       res.status(401).json({ success: false, message: "Unauthorized" });
       return;
     }
 
-    const { razorpayOrderId, razorpayPaymentId, razorpaySignature } = req.body;
+    const { razorpaySubscriptionId, razorpayPaymentId, razorpaySignature } = req.body;
 
     const orderExist = await prisma.transaction.findFirst({
       where: {
-        razorpayOrderId,
+        razorpayOrderId:razorpaySubscriptionId,
         status: "PENDING",
       },
     });
@@ -133,7 +146,7 @@ razorRouter.post("/payment/verify", authTokenMiddleware, async (req, res) => {
       return;
     }
 
-    const body = razorpayOrderId + "|" + razorpayPaymentId;
+    const body =  razorpayPaymentId+ "|" + razorpaySubscriptionId;
     const expectedSignature = crypto
       .createHmac("sha256", config.KEY_SECRET)
       .update(body.toString())
@@ -142,7 +155,7 @@ razorRouter.post("/payment/verify", authTokenMiddleware, async (req, res) => {
     if (expectedSignature !== razorpaySignature) {
       await prisma.transaction.update({
         where: {
-          razorpayOrderId,
+          razorpayOrderId:razorpaySubscriptionId,
         },
         data: {
           status: "FAILED",
@@ -158,7 +171,7 @@ razorRouter.post("/payment/verify", authTokenMiddleware, async (req, res) => {
 
     const transaction = await prisma.transaction.update({
       where: {
-        razorpayOrderId,
+        razorpayOrderId:razorpaySubscriptionId,
       },
       data: {
         status: "SUCCESS",
@@ -167,7 +180,7 @@ razorRouter.post("/payment/verify", authTokenMiddleware, async (req, res) => {
 
     await prisma.subscription.update({
       where: {
-        subscriptionId: razorpayOrderId,
+        subscriptionId: razorpaySubscriptionId,
         userId
       },
       data: {
@@ -176,6 +189,12 @@ razorRouter.post("/payment/verify", authTokenMiddleware, async (req, res) => {
         endDate: new Date(new Date().setMonth(new Date().getMonth() + 1)),
       },
     });
+
+    res.json({
+      message:"Verified successfully, enjoy the services",
+      success:true
+    })
+    return
   } catch (error) {
     console.log("Error in verifying payment, :" + error);
     res.json({
@@ -256,6 +275,8 @@ razorRouter.post("/webhook/razor", async (req, res) => {
         },
       });
 
+      
+
       if (subscriptionExist) {
         if (subscriptionExist?.status === "SUCCESS") {
           res.json({ message: "Already processed" });
@@ -296,5 +317,77 @@ razorRouter.post("/webhook/razor", async (req, res) => {
     console.log("Error in webhook from razorpay, :" + error);
   }
 });
+
+
+razorRouter.post("/cancel", authTokenMiddleware, async (req, res) => {
+  try {
+    const userId = req.userId;
+    const user = await prisma.user.findUnique({ where: { id: userId },select:{
+      subscription:true
+    } });
+
+    if (!user?.subscription) {
+      res.status(400).json({ error: "No active subscription found" });
+      return
+    }
+
+    const response = await razorClient.subscriptions.cancel(user.subscription.subscriptionId, true);
+
+   await prisma.subscription.delete({
+  where: { userId },
+});
+
+    res.json({ success: true, message: "Subscription cancelled" });
+    return
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to cancel subscription" });
+  }
+});
+
+razorRouter.get("/status",authTokenMiddleware,async(req,res)=>{
+  try {
+    const userId = req.userId
+
+    if(!userId){
+      console.log("User id does not exist")
+      return
+    }
+
+    const user= await prisma.user.findUnique({
+      where:{
+        id:userId
+      },
+      select:{
+        subscription:true
+      }
+    })
+
+    if(!user){
+      res.json({
+        message:"User does not exist",
+        success:false
+      })
+      return
+    }
+
+    res.json({
+      message:"User subscription status",
+      active:user.subscription ? true : false,
+      data:user.subscription ? {
+        ...user.subscription
+      }: undefined
+    })
+    return
+    
+  } catch (error) {
+    console.log("Error in getting user billing status, :"+error)
+    res.json({
+      message:"Error in getting user subscription status",
+      success:false
+    })
+  }
+})
+
 
 export default razorRouter;

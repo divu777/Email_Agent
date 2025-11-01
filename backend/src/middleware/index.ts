@@ -35,7 +35,7 @@ export const authTokenMiddleware = async (
 
 
     // const userExist = GlobalUser[decoded.email];
-      const redisCLient  = await RedisManager.getInstance()
+    const redisCLient  = await RedisManager.getInstance()
     const userExist = await redisCLient.getItems(decoded.email)
 
     // console.log(JSON.stringify(userExist)+"::::::")
@@ -94,7 +94,34 @@ export const authTokenMiddleware = async (
           expiry_date: user.expiry_date,
           refresh_token: user.refresh_token,
         },user.email)
+
         
+        
+      }
+    }else{
+       const expiry = new Date(userExist.expiry_date).getTime()
+      console.log(expiry+"-----epxirty")
+      const now = Date.now()
+      if(now>expiry){
+        console.log("Old tokens in db have expired...");
+        const newTokens=await GoogleOAuthManager.refreshAndPersist({access_token:userExist.access_token,expiry_date:userExist.expiry_date,refresh_token:userExist.refresh_token},decoded.email)
+        if(!newTokens){
+          console.log("Error in getting tokens the refreshed ones")
+            throw new Error("Token refresh failed")
+        }
+        const updateUser = await prisma.user.update({
+          where:{
+            email:decoded.email
+          },
+          data:newTokens
+          
+        })
+
+        await redisCLient.setItems({
+          access_token:newTokens!.access_token,
+          expiry_date:newTokens!.expiry_date,
+          refresh_token:newTokens!.refresh_token
+        },updateUser.email)
       }
     }
 

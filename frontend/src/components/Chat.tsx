@@ -50,8 +50,10 @@ const inputVariants = {
     transition: { duration: 0.3, ease: "easeOut" },
   },
 };
+import {useRazorpay} from "react-razorpay";
 
-const Chat = () => {
+const Chat = ({setActiveView}:{setActiveView:(x:any)=>void}) => {
+  const { Razorpay } = useRazorpay();
   const [file, setFile] = useState<HTMLInputElement | null>(null);
   const [error, setError] = useState(false);
 
@@ -105,7 +107,7 @@ const Chat = () => {
     if (socket?.readyState === WebSocket.OPEN) {
       const humanId = Date.now();
       const aiId = humanId + 1;
-      if (chats.length >= 19) {
+      if (chats.length >= 2) {
         setError(true);
         setTimeout(() => setError(false), 5000);
 
@@ -190,6 +192,44 @@ const Chat = () => {
       //console.log(JSON.stringify(filenameRef))
     }
   };
+
+
+  const handleUpgrade = async()=>{
+    const {data} = await axios.post(`${config.BACKEND_URL}/api/v1/billing/order/create`,{
+      planId:'plan_Ra5Nmpwy3IBJom',
+      planType:'monthly'
+    },{
+      withCredentials:true
+    })
+
+    console.log(JSON.stringify(data)+"-----order create")
+
+    const options:any ={
+      key:config.RZARPAY_ID,
+      subscription_id:data.data.subscriptionId,
+      name:'Vektor',
+      description:"Subscription Payment",
+      theme:{
+        color:'#155dfc'
+      },
+      handler: async function(response:any){
+         if (response.razorpay_payment_id) {
+           console.log(JSON.stringify(response)+"-----response from options")
+           await axios.post(`${config.BACKEND_URL}/api/v1/billing/payment/verify`,{
+             razorpaySubscriptionId:response.razorpay_subscription_id,
+             razorpayPaymentId:response.razorpay_payment_id,
+             razorpaySignature:response.razorpay_signature
+            },
+          {
+            withCredentials:true
+          })
+          }
+      },
+    }
+
+    const razor = new Razorpay(options)
+    razor.open()
+  }
 
   return (
     <motion.div
@@ -312,9 +352,11 @@ const Chat = () => {
           >
             😅 You’ve exceeded the free message limit! Don’t worry —
             <span className="ml-1 font-semibold text-red-800">
-              the dev (aka just one)
+              <button onClick={()=>setActiveView('billing')}>
+                upgrade
+              </button>
             </span>
-            is adding a payment feature soon. Can’t let you spend all my tokens!
+          
           </motion.div>
         )}
       </AnimatePresence>

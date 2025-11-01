@@ -10,6 +10,7 @@ import { config } from "../config";
 import EmailDetailView from "./EmailDetailView_v2";
 import Chat from "./Chat";
 import { EmailType2, EmailsType, EmailSummary, Mail } from "../types";
+import Billing from "./Billing";
 
 const Dashboard2 = () => {
   const [selectedMail, setselectedMail] = useState(false);
@@ -180,7 +181,17 @@ const Dashboard2 = () => {
         setIsCollapsed={setIsCollapsed}
       />
 
-      {activeView == "mail" || activeView == "send-mail" ? (
+      {activeView === "billing" ? (
+  <div
+    className={`w-auto h-[calc(100vh-64px)] lg:h-screen ${
+      isCollapsed ? "lg:ml-20" : "lg:ml-64"
+    } flex px-6 py-4 bg-gray-50 text-gray-800 lg:space-x-6`}
+  >
+    <Billing onBack={() => setActiveView("chat")} />
+  </div>
+):
+
+      activeView == "mail" || activeView == "send-mail" ? (
         <div
           className={`h-screen w-auto ${
             isCollapsed ? "lg:ml-20" : "lg:ml-64"
@@ -277,7 +288,7 @@ const Dashboard2 = () => {
           } flex px-6 py-4 bg-gray-50 text-gray-800 lg:space-x-6`}
         >
 
-        <Chat />
+        <Chat setActiveView={setActiveView} />
         </div>
       )}
 
