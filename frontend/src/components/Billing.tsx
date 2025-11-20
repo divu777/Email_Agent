@@ -43,7 +43,7 @@ const PLAN_CONFIG = {
     { icon: "✨", text: "Early access to features" },
     { icon: "🛡️", text: "Cancel anytime" },
   ],
-} as const;
+};
 
 const formatDate = (d?: string | Date | null): string => {
   if (!d) return "-";
@@ -108,7 +108,7 @@ const StatusBadge: React.FC<{ status?: string | null }> = ({ status }) => {
 };
 
 const Billing: React.FC<BillingProps> = ({ onBack }) => {
-    const {Razorpay} = useRazorpay()
+  const {Razorpay} = useRazorpay()
   const [loading, setLoading] = useState(true);
   const [sub, setSub] = useState<Subscription | null>(null);
   const [active, setActive] = useState(false);
@@ -122,7 +122,7 @@ const Billing: React.FC<BillingProps> = ({ onBack }) => {
     try {
        const res = await axios.get(`${config.BACKEND_URL}/api/v1/billing/status`, {
         withCredentials: true,
-      });// mock delay
+      });
 
       if(res.data.active===false){
         setSub(null)
@@ -153,8 +153,8 @@ const Billing: React.FC<BillingProps> = ({ onBack }) => {
       setError(null);
 
       const res = await axios.post(
-        `${config.BACKEND_URL}/api/v1/billing/order/create`,
-        { planId: "plan_Ra6svVScRdCwYW", planType: "monthly" }, // change if needed
+        `${config.BACKEND_URL}/api/v1/billing/subscribe/create`,
+        { planId: "plan_Ra6svVScRdCwYW", planType: "monthly" }, 
         { withCredentials: true }
       );
 
@@ -172,13 +172,12 @@ const Billing: React.FC<BillingProps> = ({ onBack }) => {
 
       // Open Razorpay checkout with subscription_id
       const options: any = {
-        key: keyId,
+        key: 'rzp_live_RZIfsSwCFc2WJd',
         subscription_id: subscriptionId,
         name: "Vektor",
         description: "Pro Plan subscription",
         theme: { color: "#3b82f6" },
         handler: async (response: any) => {
-          // response contains razorpay_payment_id, razorpay_subscription_id, razorpay_signature
           try {
             setVerifying(true);
             const verifyRes = await axios.post(
@@ -204,13 +203,19 @@ const Billing: React.FC<BillingProps> = ({ onBack }) => {
             setVerifying(false);
           }
         },
-        // modal: {
-        //   ondismiss: function () {
-        //     // user dismissed checkout
-        //     // optionally fetch status to ensure DB synced with webhook
-        //     fetchStatus();
-        //   },
-        // },
+        modal: {
+          ondismiss: async function () {
+            // user dismissed checkout
+            // optionally fetch status to ensure DB synced with webhook
+            console.log("herr")
+            await axios.post(`${config.BACKEND_URL}/api/v1/billing/payment/abandoned`,{
+              subscriptionId
+            },{
+              withCredentials:true
+            })
+            fetchStatus();
+          },
+        },
       };
 
       // open Razorpay. Razorpay script must be loaded on page (you can include script tag in index.html)
@@ -431,3 +436,12 @@ const handleCancel = useCallback(async () => {
 };
 
 export default Billing;
+
+
+
+
+
+/**
+ * 
+ *
+ */

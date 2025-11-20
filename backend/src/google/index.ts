@@ -4,6 +4,8 @@ import type { replyType } from "../routes/google.route";
 import z from "zod/v4";
 import { processGmailMessages } from "./convert";
 import { RedisManager } from "../lib/redis";
+import type { QueryType } from "../types";
+
 export class GoogleOAuthManager {
   static SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
@@ -255,6 +257,18 @@ static async refreshAndPersist(tokens:any,email:string){
      // console.log("senddd");
     } catch (error) {
       console.log("Erorr in sending the email"+error);
+    }
+  }
+
+  
+
+  async QueryEmail(data:QueryType){
+    try {
+      const {query} = data
+      
+    } catch (error) {
+      console.log("Error in querying the email, :"+error);
+
     }
   }
 

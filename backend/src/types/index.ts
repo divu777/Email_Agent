@@ -48,6 +48,13 @@ export const contextSchema = z.object({
   )
 });
 
+
+export const QuerySchena = z.object({
+  query:z.string()
+})
+
+export type QueryType = z.infer<typeof QuerySchena>
+
 export type contextType  = z.infer<typeof contextSchema>
 
 export type GlobalUserType = Record<string,tokens>

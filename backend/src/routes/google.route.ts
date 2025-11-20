@@ -390,3 +390,14 @@ router.post("/logout",authTokenMiddleware,async(req,res)=>{
 
 
 export default router;
+
+
+/**
+ so query works and after processing it give you back a messages array with thread and message id and then you can get info 
+
+ what we can do after razorpay first ) on search bar on top we hit this endpoint and show dialog box with this result with metadata and then
+ user can click to show case that particular email to see 
+
+ also second : could be added to chat so it can use it as a tool as well 
+ 
+ */

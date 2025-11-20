@@ -118,7 +118,8 @@ router.get("/messages",authTokenMiddleware,async(_,res)=>{
         email
       },
       select:{
-        messages:true
+        messages:true,
+        isPremium:true
       }
     })
 
@@ -133,7 +134,8 @@ router.get("/messages",authTokenMiddleware,async(_,res)=>{
     res.json({
       message:"Fetched user messages successfully.",
       success:true,
-      messages:user.messages
+      messages:user.messages,
+      isPremium:user.isPremium
     })
 
     

@@ -65,7 +65,6 @@ const sendEmail = tool(
       subject: string;
       from: string;
     },
-    config: LangGraphRunnableConfig
   ) => {
     const redisCLient  = await RedisManager.getInstance()
     const tokens = await redisCLient.getItems(input.from)
@@ -92,6 +91,15 @@ const sendEmail = tool(
     schema: SendEmailSchema,
   }
 );
+
+const searchQuery = tool(
+  async()=>{
+
+  },{
+    name:'Search in query',
+    
+  }
+)
 
 import { ToolNode, toolsCondition } from "@langchain/langgraph/prebuilt";
 import { GoogleOAuthManager } from "../../google";

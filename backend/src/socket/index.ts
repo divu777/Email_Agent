@@ -22,17 +22,22 @@ async function verifyToken(token:string){
       id:decode.id
     },
     select:{
-      messages:true
+      messages:true,
+      isPremium:true
     }
   })
 
-  if(!messagesExceeded){
+
+
+  if(!messagesExceeded ){
     return{
       valid:false
     }
   }
 
-  if(messagesExceeded.messages.length>=20){
+
+
+  if(messagesExceeded.messages.length>=2 && !messagesExceeded.isPremium ){
     return{
       valid:false
     }

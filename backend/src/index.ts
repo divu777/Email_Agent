@@ -3,7 +3,7 @@ import cors from 'cors';
 import config from './config';
 import googleRouter from "./routes/google.route"
 import genAiRouter from "./routes/genAi.routes"
-import razorRouter from './routes/rzrpay.route';
+import razorRouter from './routes/razorpay.route';
 import 'express-session'
 import cookieParser from 'cookie-parser';
 import session from 'express-session';

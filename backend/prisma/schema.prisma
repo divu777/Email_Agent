@@ -24,16 +24,22 @@ model User{
   expiry_date DateTime
   messages Message[]
   transactions Transaction[]
-  subscription Subscription? 
+  subscription Subscription[]
 }
 
-// model Chat{
-//   id String @id @default(uuid())
-//   name String
-//   messages Message[]
-//   userId String
-//   user User @relation(fields: [userId],references: [id],onDelete: Cascade)
-// }
+// payment -> 
+
+
+
+model SubscriptionDump {
+  id        String   @id @default(uuid())
+  payload   Json
+  eventType String?  // Store the event type for easy filtering
+  createdAt DateTime @default(now())
+
+  @@index([eventType])
+  @@index([createdAt])
+}
 
 model Message{
   id String @id @default(uuid())
@@ -48,8 +54,9 @@ model Transaction{
   amount Int
   planId String
   currency String @default("INR")
-  status Status @default(PENDING)
-  razorpayOrderId String @unique
+  status TransactionStatus @default(PENDING)
+  webhookEventType       String?
+  razorpaySubscriptionId String 
   razorpayPaymentId String?
   razorpaySignature String?
   createdAt DateTime @default(now())
@@ -58,15 +65,17 @@ model Transaction{
   user User @relation(fields: [userId],references: [id],onDelete: Cascade)
 
   @@index([userId])
+  @@index([razorpaySubscriptionId])
 }
 
 model Subscription{
   id String @id @default(uuid())
+  isDeleted Boolean @default(false)
   endDate DateTime?
   startDate DateTime?
-  status Status @default(PENDING)
+  status SubscriptionStatus @default(PENDING)
   planId String
-  subscriptionId String
+  subscriptionId String @unique
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   userId String @unique
@@ -82,8 +91,27 @@ enum Roles{
   toolcall
 }
 
-enum Status{
+enum SubscriptionStatus {
+  PENDING
+  AUTHENTICATED
+  ACTIVE
+  HALTED
+  PAUSED
+  CANCELLED
+  COMPLETED
+}
+
+enum TransactionStatus {
   PENDING
   SUCCESS
   FAILED
+  CANCELLED
 }
+
+
+/*
+* authenticated vs successfull
+transaction should be for each stage to track but should be week subscription one - to - one or one - to - many as how we supposed to track for a particular subscription
+
+cance
+*/

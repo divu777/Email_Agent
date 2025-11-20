@@ -59,6 +59,7 @@ const Chat = ({setActiveView}:{setActiveView:(x:any)=>void}) => {
 
   const [chats, setChats] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [isPremium,setIsPremium] = useState(false)
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const socket = useSocket();
@@ -77,10 +78,10 @@ const Chat = ({setActiveView}:{setActiveView:(x:any)=>void}) => {
     }
     //console.log(JSON.stringify(data))
     setChats(data.messages);
+    setIsPremium(data.isPremium)
   };
 
   const removeFile = async (change: boolean) => {
-    // axios request to run a cron job to remove that file from S3 and the chunk embeddings
     await axios.delete(
       `${config.BACKEND_URL}/api/v1/genai/deleteFile/${filenameRef.current}`,
       {
@@ -108,10 +109,12 @@ const Chat = ({setActiveView}:{setActiveView:(x:any)=>void}) => {
       const humanId = Date.now();
       const aiId = humanId + 1;
       if (chats.length >= 2) {
-        setError(true);
-        setTimeout(() => setError(false), 5000);
-
-        return;
+        if(!isPremium){
+          
+          setError(true);
+          setTimeout(() => setError(false), 5000);
+          return;
+        }
       }
       const messages = chats.map(({ id, ...rest }) => rest);
       messages.push({
@@ -194,42 +197,6 @@ const Chat = ({setActiveView}:{setActiveView:(x:any)=>void}) => {
   };
 
 
-  const handleUpgrade = async()=>{
-    const {data} = await axios.post(`${config.BACKEND_URL}/api/v1/billing/order/create`,{
-      planId:'plan_Ra5Nmpwy3IBJom',
-      planType:'monthly'
-    },{
-      withCredentials:true
-    })
-
-    console.log(JSON.stringify(data)+"-----order create")
-
-    const options:any ={
-      key:config.RZARPAY_ID,
-      subscription_id:data.data.subscriptionId,
-      name:'Vektor',
-      description:"Subscription Payment",
-      theme:{
-        color:'#155dfc'
-      },
-      handler: async function(response:any){
-         if (response.razorpay_payment_id) {
-           console.log(JSON.stringify(response)+"-----response from options")
-           await axios.post(`${config.BACKEND_URL}/api/v1/billing/payment/verify`,{
-             razorpaySubscriptionId:response.razorpay_subscription_id,
-             razorpayPaymentId:response.razorpay_payment_id,
-             razorpaySignature:response.razorpay_signature
-            },
-          {
-            withCredentials:true
-          })
-          }
-      },
-    }
-
-    const razor = new Razorpay(options)
-    razor.open()
-  }
 
   return (
     <motion.div
