@@ -13,18 +13,14 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      qdrant:
-        condition: service_healthy
     env_file:
       - ./backend/.env
     ports:
-      - "8081:8080"
+      - "8081:8081"
 
   web-socket:
     image: divakar777/email-websocket:latest
     depends_on:
-      qdrant:
-        condition: service_healthy
       postgres:
         condition: service_healthy
       redis:
@@ -36,7 +32,7 @@ services:
       - "4001:4000"
 
   postgres:
-    image: postgres:alpine
+    image: postgres:15-alpine
     volumes:
       - "postgres_data:/var/lib/postgresql/data"
     ports:
@@ -51,21 +47,6 @@ services:
       retries: 5
       timeout: 5s
 
-  qdrant:
-    image: qdrant/qdrant
-    volumes:
-      - "qdrant_data:/qdrant/storage"
-    environment:
-      - QDRANT_URL=http://localhost:6333
-    ports:
-      - "6333:6333"
-    healthcheck:
-      test: ["CMD-SHELL", "timeout 1 bash -c '</dev/tcp/localhost/6333' || exit 1"]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-      start_period: 10s
-
   redis:
     image: redis:6.2-alpine
     ports:
@@ -79,4 +60,3 @@ services:
 
 volumes:
   postgres_data:
-  qdrant_data:
