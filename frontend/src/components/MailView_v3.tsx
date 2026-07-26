@@ -3,18 +3,36 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Search, Mail } from "lucide-react";
 import { useState } from "react";
 
+const LABEL_OPTIONS = [
+  { id: "IMPORTANT", label: "Important" },
+  { id: "ALL", label: "All Mail" },
+  { id: "UNREAD", label: "Unread" },
+  { id: "STARRED", label: "Starred" },
+  { id: "SENT", label: "Sent" },
+  { id: "SPAM", label: "Spam" },
+  { id: "TRASH", label: "Trash" },
+];
+
 const MailView = ({
   emails,
   handleEmailClick,
   handleLoadMore,
   load,
   loading,
+  searchQuery,
+  setSearchQuery,
+  activeLabel,
+  setActiveLabel,
 }: {
   emails: EmailsType[];
   handleEmailClick: (threadId: string) => void;
   handleLoadMore: () => void;
   load: string;
   loading: boolean;
+  searchQuery: string;
+  setSearchQuery: (value: string) => void;
+  activeLabel: string;
+  setActiveLabel: (value: string) => void;
 }) => {
   const [searchFocused, setSearchFocused] = useState(false);
 
@@ -119,6 +137,8 @@ const MailView = ({
           <motion.input
             type="text"
             placeholder="Search emails..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
             className="w-full pl-10 pr-4 py-3 bg-white text-gray-800 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 transition-all duration-300"
             onFocus={() => setSearchFocused(true)}
             onBlur={() => setSearchFocused(false)}
@@ -126,6 +146,30 @@ const MailView = ({
           />
         </div>
       </motion.div>
+
+      {/* Label Filter */}
+      <div className="flex gap-2 overflow-x-auto pb-1 -mt-2 scrollbar-hide">
+        {LABEL_OPTIONS.map((opt) => (
+          <button
+            key={opt.id}
+            onClick={() => setActiveLabel(opt.id)}
+            className={`relative px-3 py-1.5 text-xs font-medium rounded-full whitespace-nowrap transition-colors duration-200 ${
+              activeLabel === opt.id
+                ? "text-white"
+                : "text-gray-600 hover:text-gray-900"
+            }`}
+          >
+            {activeLabel === opt.id && (
+              <motion.div
+                layoutId="activeLabelPill"
+                className="absolute inset-0 bg-blue-600 rounded-full"
+                transition={{ type: "spring", stiffness: 350, damping: 30 }}
+              />
+            )}
+            <span className="relative z-10">{opt.label}</span>
+          </button>
+        ))}
+      </div>
 
       {/* Email List */}
       <div className="flex-1 overflow-y-auto space-y-3 py-2 scrollbar-hide">

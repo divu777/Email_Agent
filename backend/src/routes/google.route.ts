@@ -97,6 +97,8 @@ router.get("/authorizationUrl", async(req, res) => {
             secure:!isLocalhost,
             sameSite:'lax'
           })
+          res.json({ success: false, redirectUrl: config.REDIRECT_FRONTEND_URL })
+          return
 
         }else{
           res.send({
@@ -148,11 +150,13 @@ router.get("/emails/:pageToken", authTokenMiddleware, async(req, res) => {
 
 
     const pageToken = req.params.pageToken
+    const q = typeof req.query.q === "string" ? req.query.q : undefined
+    const label = typeof req.query.label === "string" ? req.query.label : "IMPORTANT"
+    const labelIds = label === "ALL" ? [] : [label]
 
-    
     const client = new GoogleOAuthManager(token)
 
-    const response = await client.getEmailIdsMetaDataList(pageToken=="0"?undefined:pageToken)
+    const response = await client.getEmailIdsMetaDataList(pageToken=="0"?undefined:pageToken, labelIds, q)
 
 
     if(!response || !response.messages){
@@ -268,6 +272,44 @@ const ReplyThreadSchema = z.object({
 export type replyType = z.infer<typeof ReplyThreadSchema>
 
 // sending reply to a thread
+router.get("/email/attachment/:messageId/:attachmentId", authTokenMiddleware, async(req, res) => {
+  const { messageId, attachmentId } = req.params;
+  if(!messageId || !attachmentId){
+    console.log("no data available to fetch")
+    res.status(404).json({
+      message:"Error in fetching",
+      success:false
+    })
+    return;
+  }
+  try {
+    const email = req.email;
+    if (!email) {
+      return;
+    }
+
+    const redisClient = await RedisManager.getInstance();
+    const tokens = await redisClient.getItems(email);
+
+    const gmail = new GoogleOAuthManager(tokens);
+    const data = await gmail.getAttachment(messageId, attachmentId);
+
+    res.json({
+      message: "attachment fetched",
+      success: true,
+      data,
+    });
+    return;
+  } catch (error) {
+    console.log("Error in getting attachment " + error);
+    res.json({
+      message: "Error in getting attachment",
+      success: false,
+    });
+    return;
+  }
+});
+
 router.post("/email/reply",authTokenMiddleware,async(req,res)=>{
   const email = req.email
   try {

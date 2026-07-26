@@ -1,6 +1,26 @@
-import { Star } from "lucide-react";
+import { Star, Paperclip, Download } from "lucide-react";
 import { IoReturnUpBack } from "react-icons/io5";
+import axios from "axios";
 import { EmailSummary, EmailType2 } from "../types";
+import { config } from "../config";
+
+const downloadAttachment = async (
+  messageId: string,
+  filename: string,
+  attachmentId: string,
+  mimeType: string
+) => {
+  const response = await axios.get(
+    `${config.BACKEND_URL}/api/v1/google/email/attachment/${messageId}/${attachmentId}`,
+    { withCredentials: true }
+  );
+  if (!response.data?.data) return;
+
+  const link = document.createElement("a");
+  link.href = `data:${mimeType};base64,${response.data.data}`;
+  link.download = filename;
+  link.click();
+};
 
 const EmailDetailView = ({
   email,
@@ -70,9 +90,41 @@ const EmailDetailView = ({
 
               {/* Message Body */}
               <div className="ml-12">
-                <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
-                  {msg.snippet}
-                </p>
+                {msg.html ? (
+                  <iframe
+                    title={`email-${msg.id}`}
+                    srcDoc={msg.html}
+                    sandbox=""
+                    className="w-full border-0"
+                    style={{ minHeight: "200px" }}
+                    onLoad={(e) => {
+                      const doc = e.currentTarget.contentWindow?.document;
+                      if (doc) e.currentTarget.style.height = `${doc.body.scrollHeight + 16}px`;
+                    }}
+                  />
+                ) : (
+                  <p className="text-sm text-gray-700 leading-relaxed whitespace-pre-line">
+                    {msg.text || msg.snippet}
+                  </p>
+                )}
+
+                {msg.attachments && msg.attachments.length > 0 && (
+                  <div className="mt-3 flex flex-col gap-2">
+                    {msg.attachments.map((att) => (
+                      <button
+                        key={att.attachmentId}
+                        onClick={() =>
+                          downloadAttachment(msg.id, att.filename, att.attachmentId, att.mimeType)
+                        }
+                        className="flex items-center gap-2 text-sm text-blue-600 hover:text-blue-800 border border-gray-200 rounded-md px-3 py-1.5 w-fit"
+                      >
+                        <Paperclip size={14} />
+                        {att.filename}
+                        <Download size={14} />
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           );

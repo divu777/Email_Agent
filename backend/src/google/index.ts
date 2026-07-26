@@ -2,8 +2,48 @@ import { gmail_v1, google } from "googleapis";
 import config from "../config/index";
 import type { replyType } from "../routes/google.route";
 import z from "zod/v4";
-import { processGmailMessages } from "./convert";
 import { RedisManager } from "../lib/redis";
+
+function decodeBase64Url(data: string) {
+  return Buffer.from(data.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("utf-8");
+}
+
+type Attachment = {
+  filename: string;
+  mimeType: string;
+  attachmentId: string;
+  size: number;
+};
+
+// Gmail bodies are recursive multipart trees - walk them once to pull out
+// the real html/text content and attachment refs instead of discarding payload.
+function extractContent(payload?: gmail_v1.Schema$MessagePart): {
+  html: string;
+  text: string;
+  attachments: Attachment[];
+} {
+  const result = { html: "", text: "", attachments: [] as Attachment[] };
+
+  const walk = (part?: gmail_v1.Schema$MessagePart) => {
+    if (!part) return;
+    if (part.filename && part.body?.attachmentId) {
+      result.attachments.push({
+        filename: part.filename,
+        mimeType: part.mimeType || "application/octet-stream",
+        attachmentId: part.body.attachmentId,
+        size: part.body.size || 0,
+      });
+    } else if (part.mimeType === "text/html" && part.body?.data) {
+      result.html += decodeBase64Url(part.body.data);
+    } else if (part.mimeType === "text/plain" && part.body?.data) {
+      result.text += decodeBase64Url(part.body.data);
+    }
+    part.parts?.forEach(walk);
+  };
+
+  walk(payload);
+  return result;
+}
 export class GoogleOAuthManager {
   static SCOPES = [
     "https://www.googleapis.com/auth/gmail.modify",
@@ -132,7 +172,8 @@ static async refreshAndPersist(tokens:any,email:string){
     */
   async getEmailIdsMetaDataList(
     token?:string,
-    labels: any[] = ["IMPORTANT"]
+    labels: any[] = ["IMPORTANT"],
+    q?: string
   ) {
     try {
      // console.log("-------"+token)
@@ -142,7 +183,8 @@ static async refreshAndPersist(tokens:any,email:string){
         userId: "me",
         maxResults:20,
         pageToken:token?token: undefined,
-        labelIds: labels,
+        ...(labels.length ? { labelIds: labels } : {}),
+        q: q || undefined,
       });
      //console.log(JSON.stringify(emailThreadIds))
       return emailThreadIds.data;
@@ -199,13 +241,16 @@ static async refreshAndPersist(tokens:any,email:string){
           head.name === 'Message-ID'
       );
 
-        delete message.payload;
+        const { html, text, attachments } = extractContent(message.payload);
 
         return {
           id: message.id,
           snippet: message.snippet,
           labels: message.labelIds,
           impheaders,
+          html,
+          text,
+          attachments,
         };
       });
 
@@ -217,6 +262,19 @@ static async refreshAndPersist(tokens:any,email:string){
     }
   }
 
+
+  // returns standard base64 (not decoded to text) - attachments are binary (PDFs, images, etc)
+  async getAttachment(messageId: string, attachmentId: string) {
+    await this.ensureValidTokens();
+    const { data } = await this.gmail!.users.messages.attachments.get({
+      userId: "me",
+      messageId,
+      id: attachmentId,
+    });
+    return data.data
+      ? Buffer.from(data.data.replace(/-/g, "+").replace(/_/g, "/"), "base64").toString("base64")
+      : null;
+  }
 
   async sendEmail(data: SendMessageType) {
     try {

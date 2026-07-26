@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Sidebar from "./Sidebar_v2";
 import axios from "axios";
 import { X } from "lucide-react";
@@ -23,6 +23,10 @@ const Dashboard2 = () => {
   const [load, setLoad] = useState("0");
   const [loading, setLoading] = useState(false);
   const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeLabel, setActiveLabel] = useState("IMPORTANT");
+  const isFirstSearchRun = useRef(true);
+  const isFirstLabelRun = useRef(true);
 
  
 
@@ -33,22 +37,48 @@ const Dashboard2 = () => {
   });
 
 
-  const fetchEmailHeaders = async () => {
+  const fetchEmailHeaders = async (
+    pageToken: string,
+    query: string,
+    label: string,
+    replace: boolean
+  ) => {
     const response = await axios.get(
-      `${config.BACKEND_URL}/api/v1/google/emails/${load}`,
-      { withCredentials: true }
+      `${config.BACKEND_URL}/api/v1/google/emails/${pageToken}`,
+      { params: { q: query || undefined, label }, withCredentials: true }
     );
     //console.log(response.data.array);
     if (!response.data.success && response.data.redirectUrl) {
       window.location.href = response.data.redirectUrl;
     }
-    setEmails((prev) => [...prev, ...response.data.array]);
+    setEmails((prev) =>
+      replace ? response.data.array : [...prev, ...response.data.array]
+    );
     setLoad(response.data.nextPageToken);
   };
 
   useEffect(() => {
-    fetchEmailHeaders();
+    fetchEmailHeaders("0", "", activeLabel, true);
   }, []);
+
+  useEffect(() => {
+    if (isFirstSearchRun.current) {
+      isFirstSearchRun.current = false;
+      return;
+    }
+    const timeout = setTimeout(() => {
+      fetchEmailHeaders("0", searchQuery, activeLabel, true);
+    }, 400);
+    return () => clearTimeout(timeout);
+  }, [searchQuery]);
+
+  useEffect(() => {
+    if (isFirstLabelRun.current) {
+      isFirstLabelRun.current = false;
+      return;
+    }
+    fetchEmailHeaders("0", searchQuery, activeLabel, true);
+  }, [activeLabel]);
 
   useEffect(() => {
     if (activeView === "send-mail") {
@@ -167,7 +197,7 @@ const Dashboard2 = () => {
 
   const handleLoadMore = async () => {
     setLoading(true);
-    await fetchEmailHeaders();
+    await fetchEmailHeaders(load, searchQuery, activeLabel, false);
     setLoading(false);
   };
 
@@ -193,6 +223,10 @@ const Dashboard2 = () => {
               handleLoadMore={handleLoadMore}
               load={load}
               loading={loading}
+              searchQuery={searchQuery}
+              setSearchQuery={setSearchQuery}
+              activeLabel={activeLabel}
+              setActiveLabel={setActiveLabel}
             />
           ) : (
             <EmptyState type="no-email" />

@@ -34,11 +34,21 @@ export type SendReply =
       };
     };
 
+export type EmailAttachment = {
+  filename: string;
+  mimeType: string;
+  attachmentId: string;
+  size: number;
+};
+
 export type EmailSummary = {
   id: string;
   snippet: string;
   labels: string[];
   impheaders: { value: string; name: string }[];
+  html?: string;
+  text?: string;
+  attachments?: EmailAttachment[];
 };
 
 export type EmailType = {

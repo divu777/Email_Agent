@@ -46,11 +46,11 @@ jobs:
           push: true
           tags: divakar777/email-websocket:latest
 
-      - name: SSH into Droplet and Deploy
+      - name: SSH into GCE VM and Deploy
         uses: appleboy/ssh-action@v0.1.10
         with:
-          host: ${{ secrets.DO_HOST }}
-          username: ${{ secrets.DO_USER }}
+          host: ${{ secrets.GCP_HOST }}
+          username: ${{ secrets.GCP_USER }}
           key: ${{ secrets.SSH_KEY }}
           script: |
             cd Email_Agent

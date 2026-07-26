@@ -112,13 +112,9 @@ wss.on("connection", async(socket,req) => {
         streamMode: "updates",
       }
     )) {
-     // console.log(JSON.stringify(chunk)+"--------------->chunk");
-
-
       if(chunk.chat_node || chunk.rag_llm){
         const llm_node = chunk.chat_node ? chunk.chat_node : chunk.rag_llm
         const lastMsg = llm_node?.messages[llm_node?.messages.length - 1]!;
-       // console.log(lastMsg.content + "---------->/n");
         const message = await prisma.message.create({
           data:{
             userId:verifiedToken.data?.id,
