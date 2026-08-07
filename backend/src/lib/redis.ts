@@ -41,4 +41,19 @@ export class RedisManager {
     const response = await this.redisClient.get(`user:${email}:tokens`);
     return JSON.parse(response as string);
   }
+
+  // episodic record of emails the injection classifier has flagged - checked
+  // before re-reading/re-classifying an email so a forged message is never
+  // loaded into context twice.
+  async flagEmail(email: string, messageId: string, reason: string) {
+    await this.redisClient.set(
+      `flagged:${email}:${messageId}`,
+      JSON.stringify({ reason, flaggedAt: new Date().toISOString() })
+    );
+  }
+
+  async getFlaggedEmail(email: string, messageId: string) {
+    const response = await this.redisClient.get(`flagged:${email}:${messageId}`);
+    return response ? JSON.parse(response) : null;
+  }
 }

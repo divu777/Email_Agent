@@ -13,6 +13,14 @@ type Message = {
   id: number;
 };
 
+type ApprovalRequest = {
+  id: number;
+  tool: string;
+  input: Record<string, unknown>;
+  flagged?: boolean;
+  flagReason?: string;
+};
+
 
 const containerVariants = {
   hidden: { opacity: 0, y: 20 },
@@ -58,6 +66,7 @@ const Chat = () => {
 
   const [chats, setChats] = useState<Message[]>([]);
   const [input, setInput] = useState("");
+  const [pendingApproval, setPendingApproval] = useState<ApprovalRequest | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const socket = useSocket();
@@ -138,16 +147,37 @@ const Chat = () => {
   useEffect(() => {
     if (socket?.readyState === WebSocket.OPEN) {
       socket.onmessage = (message) => {
-        const aiMessage = JSON.parse(message.data);
+        const event = JSON.parse(message.data);
+
+        if (event.type === "approval_request") {
+          setPendingApproval({
+            id: event.id,
+            tool: event.tool,
+            input: event.input,
+            flagged: event.flagged,
+            flagReason: event.flagReason,
+          });
+          return;
+        }
 
         setChats((prev) =>
-          prev.map((m) =>
-            m.id === aiMessage.id ? { ...m, content: aiMessage.content } : m
-          )
+          prev.map((m) => (m.id === event.id ? { ...m, content: event.content } : m))
         );
       };
     }
   }, [socket]);
+
+  const handleApprovalDecision = (approved: boolean) => {
+    if (!pendingApproval || socket?.readyState !== WebSocket.OPEN) return;
+    socket.send(
+      JSON.stringify({
+        type: "approval_response",
+        id: pendingApproval.id,
+        approved,
+      })
+    );
+    setPendingApproval(null);
+  };
 
   const filenameRef = useRef<String>(null);
 
@@ -250,6 +280,45 @@ const Chat = () => {
         </motion.div>
       )}
 
+      {pendingApproval && (
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: 10 }}
+          className="border border-amber-300 bg-amber-50 rounded-lg px-4 py-3 space-y-2"
+        >
+          <p className="text-sm font-semibold text-amber-800">
+            Approve action: {pendingApproval.tool}
+          </p>
+          {pendingApproval.flagged && (
+            <p className="text-xs font-medium text-red-700 bg-red-50 border border-red-200 rounded px-2 py-1">
+              ⚠ This action may not match your original request: {pendingApproval.flagReason}
+            </p>
+          )}
+          <div className="text-xs text-amber-700 space-y-0.5">
+            {Object.entries(pendingApproval.input).map(([key, value]) => (
+              <p key={key}>
+                <span className="font-medium">{key}:</span> {String(value)}
+              </p>
+            ))}
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={() => handleApprovalDecision(true)}
+              className="px-3 py-1.5 text-sm rounded-md bg-green-600 hover:bg-green-700 text-white"
+            >
+              Accept
+            </button>
+            <button
+              onClick={() => handleApprovalDecision(false)}
+              className="px-3 py-1.5 text-sm rounded-md bg-red-100 hover:bg-red-200 text-red-700"
+            >
+              Reject
+            </button>
+          </div>
+        </motion.div>
+      )}
+
       {file && (
         <div className="mb-2 flex items-center space-x-2 bg-gray-100 px-3 py-1 rounded w-fit">
           <File className="w-4 h-4 text-gray-600" />
@@ -271,18 +340,24 @@ const Chat = () => {
       >
         <input
           type="text"
-          placeholder="Type a message..."
+          placeholder={
+            pendingApproval
+              ? "Respond to the pending approval above to continue..."
+              : "Type a message..."
+          }
           value={input}
+          disabled={!!pendingApproval}
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && handleSend()}
-          className="flex-1 pl-4 pr-20 py-2 bg-transparent text-gray-800 focus:outline-none"
+          className="flex-1 pl-4 pr-20 py-2 bg-transparent text-gray-800 focus:outline-none disabled:cursor-not-allowed disabled:opacity-60"
         />
 
         <motion.button
           whileTap={{ scale: 0.9 }}
           whileHover={{ scale: 1.1 }}
           onClick={() => fileInputRef.current?.click()}
-          className="absolute right-12 p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition"
+          disabled={!!pendingApproval}
+          className="absolute right-12 p-2 rounded-full bg-gray-200 hover:bg-gray-300 transition disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Upload className="w-4 h-4 text-gray-600" />
         </motion.button>
@@ -290,7 +365,8 @@ const Chat = () => {
           whileTap={{ scale: 0.9 }}
           whileHover={{ scale: 1.05 }}
           onClick={handleSend}
-          className="absolute right-3 p-2 rounded-full bg-blue-600 hover:bg-blue-700 transition-all duration-200"
+          disabled={!!pendingApproval}
+          className="absolute right-3 p-2 rounded-full bg-blue-600 hover:bg-blue-700 transition-all duration-200 disabled:opacity-60 disabled:cursor-not-allowed"
         >
           <Send className="w-4 h-4 text-white" />
         </motion.button>

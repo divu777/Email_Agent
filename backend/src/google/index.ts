@@ -211,8 +211,8 @@ static async refreshAndPersist(tokens:any,email:string){
           head.name === "Date" ||
           head.name === "To"
       );
-      delete emailData.data.payload;
-      return { ...emailData.data, impheaders };
+      const { html, text, attachments } = extractContent(emailData.data.payload);
+      return { ...emailData.data, impheaders, html, text, attachments };
     } catch (error) {
       console.log("Error in getting the Email 2 " + error);
     }
